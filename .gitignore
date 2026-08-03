@@ -1,0 +1,22 @@
+# Dependencias
+/vendor/
+/node_modules/
+
+# Entorno
+.env
+.env.local
+.env.*.local
+
+# Logs y caché
+*.log
+/storage/logs/
+/bootstrap/cache/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# XAMPP / PHP
+*.cache
