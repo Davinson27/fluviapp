@@ -8,8 +8,13 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Zona horaria
+// Zona horaria y codificación UTF-8
 date_default_timezone_set('America/Bogota');
+mb_internal_encoding('UTF-8');
+mb_http_output('UTF-8');
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+}
 
 // Constantes de la aplicación
 define('APP_NAME', 'FluviApp');

@@ -8,6 +8,13 @@ require_once __DIR__ . '/Model.php';
 class Usuario extends Model {
     protected string $table = 'usuarios';
 
+    public function emailExists(string $email, int $excludeId = 0): bool {
+        $stmt = $this->db->prepare("SELECT COUNT(*) AS total FROM `{$this->table}` WHERE email = :email AND id != :excludeId");
+        $stmt->execute(['email' => $email, 'excludeId' => $excludeId]);
+        $row = $stmt->fetch();
+        return ((int)($row['total'] ?? 0)) > 0;
+    }
+
     public function findByEmail(string $email): ?array {
         $stmt = $this->db->prepare("SELECT * FROM `{$this->table}` WHERE email = :email LIMIT 1");
         $stmt->execute(['email' => $email]);

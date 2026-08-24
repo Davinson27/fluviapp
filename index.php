@@ -172,6 +172,37 @@ switch ($path) {
         (new ReportesController())->index();
         break;
 
+    // Usuarios y Roles (Solo Administrador)
+    case '/usuarios':
+        require_once __DIR__ . '/app/Controllers/UsuariosController.php';
+        (new UsuariosController())->index();
+        break;
+
+    case '/usuarios/crear':
+        require_once __DIR__ . '/app/Controllers/UsuariosController.php';
+        (new UsuariosController())->create();
+        break;
+
+    case '/usuarios/guardar':
+        require_once __DIR__ . '/app/Controllers/UsuariosController.php';
+        (new UsuariosController())->store();
+        break;
+
+    case '/usuarios/editar':
+        require_once __DIR__ . '/app/Controllers/UsuariosController.php';
+        (new UsuariosController())->edit();
+        break;
+
+    case '/usuarios/actualizar':
+        require_once __DIR__ . '/app/Controllers/UsuariosController.php';
+        (new UsuariosController())->update();
+        break;
+
+    case '/usuarios/eliminar':
+        require_once __DIR__ . '/app/Controllers/UsuariosController.php';
+        (new UsuariosController())->delete();
+        break;
+
     default:
         http_response_code(404);
         echo "<div style='font-family:sans-serif;text-align:center;padding:50px;'>

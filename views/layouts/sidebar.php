@@ -35,6 +35,11 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
             <i class="fa-solid fa-chart-line me-3 text-light"></i>Reportes y Estadísticas
         </a>
         <?php endif; ?>
+        <?php if ($currentUser && $currentUser['rol'] === 'admin'): ?>
+        <a href="<?= BASE_URL ?>/usuarios" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/usuarios') ? 'active' : '' ?>">
+            <i class="fa-solid fa-users-gear me-3 text-warning"></i>Usuarios y Roles
+        </a>
+        <?php endif; ?>
     </div>
 </div>
 <!-- /#sidebar-wrapper -->
