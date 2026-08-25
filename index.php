@@ -39,10 +39,62 @@ switch ($path) {
         (new AuthController())->logout();
         break;
 
+    // Registro de Clientes (público)
+    case '/registro':
+        require_once __DIR__ . '/app/Controllers/AuthController.php';
+        $controller = new AuthController();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $controller->register();
+        } else {
+            $controller->showRegister();
+        }
+        break;
+
     // Dashboard
     case '/dashboard':
         require_once __DIR__ . '/app/Controllers/DashboardController.php';
         (new DashboardController())->index();
+        break;
+
+    // Portal de Pasajeros / Clientes
+    case '/portal':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->portal();
+        break;
+
+    case '/cliente/comprar':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->comprar();
+        break;
+
+    case '/cliente/procesar-compra':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->procesarCompra();
+        break;
+
+    case '/cliente/mis-boletos':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->misBoletos();
+        break;
+
+    case '/cliente/ver-ruta':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->verRuta();
+        break;
+
+    case '/cliente/enviar-encomienda':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->encomiendaCrear();
+        break;
+
+    case '/cliente/guardar-encomienda':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->guardarEncomienda();
+        break;
+
+    case '/cliente/mis-encomiendas':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->misEncomiendas();
         break;
 
     // Embarcaciones
@@ -93,6 +145,11 @@ switch ($path) {
         (new RutasController())->store();
         break;
 
+    case '/rutas/editar-tarifa':
+        require_once __DIR__ . '/app/Controllers/RutasController.php';
+        (new RutasController())->actualizarTarifa();
+        break;
+
     case '/rutas/eliminar':
         require_once __DIR__ . '/app/Controllers/RutasController.php';
         (new RutasController())->delete();
@@ -117,6 +174,11 @@ switch ($path) {
     case '/viajes/cambiar-estado':
         require_once __DIR__ . '/app/Controllers/ViajesController.php';
         (new ViajesController())->cambiarEstado();
+        break;
+
+    case '/viajes/editar-precio':
+        require_once __DIR__ . '/app/Controllers/ViajesController.php';
+        (new ViajesController())->actualizarPrecio();
         break;
 
     case '/viajes/manifiesto':

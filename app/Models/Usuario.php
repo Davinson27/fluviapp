@@ -29,16 +29,17 @@ class Usuario extends Model {
 
     public function create(array $data): int {
         $stmt = $this->db->prepare("
-            INSERT INTO `{$this->table}` (nombre, email, password, rol, estado, telefono)
-            VALUES (:nombre, :email, :password, :rol, :estado, :telefono)
+            INSERT INTO `{$this->table}` (nombre, email, documento, password, rol, estado, telefono)
+            VALUES (:nombre, :email, :documento, :password, :rol, :estado, :telefono)
         ");
         $stmt->execute([
-            'nombre'   => $data['nombre'],
-            'email'    => $data['email'],
-            'password' => password_hash($data['password'], PASSWORD_BCRYPT),
-            'rol'      => $data['rol'] ?? 'taquilla',
-            'estado'   => $data['estado'] ?? 'activo',
-            'telefono' => $data['telefono'] ?? null,
+            'nombre'    => $data['nombre'],
+            'email'     => $data['email'],
+            'documento' => $data['documento'] ?? null,
+            'password'  => password_hash($data['password'], PASSWORD_BCRYPT),
+            'rol'       => $data['rol'] ?? 'cliente',
+            'estado'    => $data['estado'] ?? 'activo',
+            'telefono'  => $data['telefono'] ?? null,
         ]);
         return (int)$this->db->lastInsertId();
     }
@@ -47,31 +48,33 @@ class Usuario extends Model {
         if (!empty($data['password'])) {
             $stmt = $this->db->prepare("
                 UPDATE `{$this->table}` 
-                SET nombre = :nombre, email = :email, password = :password, rol = :rol, estado = :estado, telefono = :telefono
+                SET nombre = :nombre, email = :email, documento = :documento, password = :password, rol = :rol, estado = :estado, telefono = :telefono
                 WHERE id = :id
             ");
             return $stmt->execute([
-                'id'       => $id,
-                'nombre'   => $data['nombre'],
-                'email'    => $data['email'],
-                'password' => password_hash($data['password'], PASSWORD_BCRYPT),
-                'rol'      => $data['rol'],
-                'estado'   => $data['estado'],
-                'telefono' => $data['telefono'] ?? null,
+                'id'        => $id,
+                'nombre'    => $data['nombre'],
+                'email'     => $data['email'],
+                'documento' => $data['documento'] ?? null,
+                'password'  => password_hash($data['password'], PASSWORD_BCRYPT),
+                'rol'       => $data['rol'],
+                'estado'    => $data['estado'],
+                'telefono'  => $data['telefono'] ?? null,
             ]);
         } else {
             $stmt = $this->db->prepare("
                 UPDATE `{$this->table}` 
-                SET nombre = :nombre, email = :email, rol = :rol, estado = :estado, telefono = :telefono
+                SET nombre = :nombre, email = :email, documento = :documento, rol = :rol, estado = :estado, telefono = :telefono
                 WHERE id = :id
             ");
             return $stmt->execute([
-                'id'       => $id,
-                'nombre'   => $data['nombre'],
-                'email'    => $data['email'],
-                'rol'      => $data['rol'],
-                'estado'   => $data['estado'],
-                'telefono' => $data['telefono'] ?? null,
+                'id'        => $id,
+                'nombre'    => $data['nombre'],
+                'email'     => $data['email'],
+                'documento' => $data['documento'] ?? null,
+                'rol'       => $data['rol'],
+                'estado'    => $data['estado'],
+                'telefono'  => $data['telefono'] ?? null,
             ]);
         }
     }

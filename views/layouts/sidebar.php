@@ -9,6 +9,22 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
         <div class="small text-muted fs-6 fw-normal text-capitalize mt-1">Gestión Fluvial</div>
     </div>
     <div class="list-group list-group-flush my-3">
+        <?php if (AuthHelper::isCliente()): ?>
+        <!-- Menú del Portal de Pasajeros -->
+        <a href="<?= BASE_URL ?>/portal" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/portal') && !str_contains($currentRoute, '/cliente/') ? 'active' : '' ?>">
+            <i class="fa-solid fa-compass me-3 text-info"></i>Explorar Rutas
+        </a>
+        <a href="<?= BASE_URL ?>/cliente/mis-boletos" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/mis-boletos') ? 'active' : '' ?>">
+            <i class="fa-solid fa-ticket me-3 text-success"></i>Mis Tiquetes
+        </a>
+        <a href="<?= BASE_URL ?>/cliente/enviar-encomienda" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/enviar-encomienda') ? 'active' : '' ?>">
+            <i class="fa-solid fa-boxes-packing me-3 text-warning"></i>Enviar Encomienda
+        </a>
+        <a href="<?= BASE_URL ?>/cliente/mis-encomiendas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/mis-encomiendas') ? 'active' : '' ?>">
+            <i class="fa-solid fa-box me-3 text-primary"></i>Mis Encomiendas
+        </a>
+        <?php else: ?>
+        <!-- Menú Administrativo / Operativo -->
         <a href="<?= BASE_URL ?>/dashboard" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/dashboard') ? 'active' : '' ?>">
             <i class="fa-solid fa-gauge me-3 text-info"></i>Dashboard
         </a>
@@ -39,6 +55,7 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
         <a href="<?= BASE_URL ?>/usuarios" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/usuarios') ? 'active' : '' ?>">
             <i class="fa-solid fa-users-gear me-3 text-warning"></i>Usuarios y Roles
         </a>
+        <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>

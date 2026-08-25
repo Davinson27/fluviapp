@@ -112,13 +112,48 @@ class Viaje extends Model {
         return $stmt->execute(['id' => $id, 'estado' => $estado]);
     }
 
-    public function descontarCupo(int $id): bool {
-        $stmt = $this->db->prepare("UPDATE `{$this->table}` SET cupos_disponibles = cupos_disponibles - 1 WHERE id = :id AND cupos_disponibles > 0");
-        return $stmt->execute(['id' => $id]);
+    public function updatePrecio(int $id, float $precio): bool {
+        $stmt = $this->db->prepare("UPDATE `{$this->table}` SET precio_pasaje = :precio WHERE id = :id");
+        return $stmt->execute(['id' => $id, 'precio' => $precio]);
     }
 
-    public function descontarCarga(int $id, float $kilos): bool {
-        $stmt = $this->db->prepare("UPDATE `{$this->table}` SET capacidad_carga_disponible_kg = capacidad_carga_disponible_kg - :kilos WHERE id = :id AND capacidad_carga_disponible_kg >= :kilos");
-        return $stmt->execute(['id' => $id, 'kilos' => $kilos]);
+    public function getViajesDisponibles(array $filtros = []): array {
+        $sql = "
+            SELECT v.*,
+                   r.distancia_km, r.duracion_estimada_min,
+                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio,
+                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio,
+                   e.nombre AS embarcacion_nombre, e.matricula AS embarcacion_matricula, e.tipo AS embarcacion_tipo,
+                   u.nombre AS capitan_nombre
+            FROM `{$this->table}` v
+            JOIN rutas r ON v.ruta_id = r.id
+            JOIN muelles mo ON r.muelle_origen_id = mo.id
+            JOIN muelles md ON r.muelle_destino_id = md.id
+            JOIN embarcaciones e ON v.embarcacion_id = e.id
+            LEFT JOIN usuarios u ON v.capitan_id = u.id
+            WHERE v.estado IN ('programado', 'en_embarque') AND v.cupos_disponibles > 0
+        ";
+        $params = [];
+
+        if (!empty($filtros['origen_id'])) {
+            $sql .= " AND r.muelle_origen_id = :origen_id ";
+            $params['origen_id'] = (int)$filtros['origen_id'];
+        }
+
+        if (!empty($filtros['destino_id'])) {
+            $sql .= " AND r.muelle_destino_id = :destino_id ";
+            $params['destino_id'] = (int)$filtros['destino_id'];
+        }
+
+        if (!empty($filtros['fecha'])) {
+            $sql .= " AND v.fecha_salida = :fecha ";
+            $params['fecha'] = $filtros['fecha'];
+        }
+
+        $sql .= " ORDER BY v.fecha_salida ASC, v.hora_salida ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 }

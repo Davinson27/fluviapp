@@ -85,4 +85,9 @@ class Ruta extends Model {
             'estado'                => $data['estado'] ?? 'activa'
         ]);
     }
+
+    public function updateTarifa(int $id, float $tarifa): bool {
+        $stmt = $this->db->prepare("UPDATE `{$this->table}` SET tarifa_base = :tarifa WHERE id = :id");
+        return $stmt->execute(['id' => $id, 'tarifa' => $tarifa]);
+    }
 }

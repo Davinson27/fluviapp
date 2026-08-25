@@ -59,6 +59,25 @@ class RutasController extends Controller {
         $this->redirect('/rutas');
     }
 
+    public function actualizarTarifa(): void {
+        AuthHelper::requireRoles(['admin']);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/rutas');
+        }
+
+        $id = (int)($_POST['id'] ?? 0);
+        $tarifa = (float)($_POST['tarifa_base'] ?? 0);
+
+        if ($id > 0 && $tarifa > 0) {
+            $this->rutaModel->updateTarifa($id, $tarifa);
+            SessionHelper::setFlash('success', 'Tarifa base de la ruta actualizada a $' . number_format($tarifa, 0, ',', '.') . ' COP.');
+        } else {
+            SessionHelper::setFlash('danger', 'Ingrese un valor de tarifa válido.');
+        }
+
+        $this->redirect('/rutas');
+    }
+
     public function delete(): void {
         AuthHelper::requireRoles(['admin']);
         $id = (int)($_POST['id'] ?? 0);

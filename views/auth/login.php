@@ -65,15 +65,19 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm mb-3">
                 <i class="fa-solid fa-right-to-bracket me-2"></i>Ingresar al Sistema
             </button>
+
+            <div class="text-center small text-muted mb-3">
+                ¿No tienes cuenta de pasajero? <a href="<?= BASE_URL ?>/registro" class="fw-bold text-primary text-decoration-none">Regístrate aquí</a>
+            </div>
         </form>
 
-        <div class="mt-4 p-3 bg-light rounded text-center small text-muted border">
-            <strong>Usuarios de prueba (clave: admin123):</strong><br>
+        <div class="mt-3 p-3 bg-light rounded text-center small text-muted border">
+            <strong>Cuentas de prueba (clave: admin123 / cliente123):</strong><br>
             <code>admin@fluviapp.com</code> (Administrador)<br>
-            <code>taquilla@fluviapp.com</code> (Taquillero)
+            <code>cliente@fluviapp.com</code> (Pasajero / Cliente)
         </div>
     </div>
 </div>

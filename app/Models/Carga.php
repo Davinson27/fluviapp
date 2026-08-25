@@ -62,6 +62,28 @@ class Carga extends Model {
         return $stmt->fetchAll();
     }
 
+    public function getByUsuario(int $usuarioId): array {
+        $sql = "
+            SELECT c.*,
+                   v.codigo_viaje, v.fecha_salida, v.hora_salida, v.estado AS viaje_estado,
+                   r.distancia_km, r.duracion_estimada_min,
+                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio,
+                   md.nombre AS destino_nombre, md.municipio AS destino_municipio,
+                   e.nombre AS embarcacion_nombre
+            FROM `{$this->table}` c
+            JOIN viajes v ON c.viaje_id = v.id
+            JOIN rutas r ON v.ruta_id = r.id
+            JOIN muelles mo ON r.muelle_origen_id = mo.id
+            JOIN muelles md ON r.muelle_destino_id = md.id
+            JOIN embarcaciones e ON v.embarcacion_id = e.id
+            WHERE c.usuario_id = :usuario_id
+            ORDER BY c.id DESC
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['usuario_id' => $usuarioId]);
+        return $stmt->fetchAll();
+    }
+
     public function registrar(array $data): int {
         $this->db->beginTransaction();
         try {
@@ -81,18 +103,19 @@ class Carga extends Model {
 
             $stmt = $this->db->prepare("
                 INSERT INTO `{$this->table}` (
-                    viaje_id, guia_numero, remitente_nombre, remitente_telefono,
+                    viaje_id, usuario_id, guia_numero, remitente_nombre, remitente_telefono,
                     destinatario_nombre, destinatario_telefono, descripcion_carga,
                     peso_kg, valor_declarado, valor_flete, estado, registrado_por_id
                 )
                 VALUES (
-                    :viaje_id, :guia_numero, :remitente_nombre, :remitente_telefono,
+                    :viaje_id, :usuario_id, :guia_numero, :remitente_nombre, :remitente_telefono,
                     :destinatario_nombre, :destinatario_telefono, :descripcion_carga,
                     :peso_kg, :valor_declarado, :valor_flete, :estado, :registrado_por_id
                 )
             ");
             $stmt->execute([
                 'viaje_id'              => (int)$data['viaje_id'],
+                'usuario_id'            => !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null,
                 'guia_numero'           => $guiaNumero,
                 'remitente_nombre'      => trim($data['remitente_nombre']),
                 'remitente_telefono'    => trim($data['remitente_telefono']),

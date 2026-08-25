@@ -92,7 +92,22 @@
                                             <small class="text-muted"><?= htmlspecialchars($r['origen_municipio']) ?> a <?= htmlspecialchars($r['destino_municipio']) ?></small>
                                         </td>
                                         <td><?= $r['distancia_km'] ?> km <br><small class="text-muted">~<?= $r['duracion_estimada_min'] ?> mins</small></td>
-                                        <td class="fw-bold text-success">$<?= number_format($r['tarifa_base'], 0, ',', '.') ?></td>
+                                        <td>
+                                            <?php if (AuthHelper::user()['rol'] === 'admin'): ?>
+                                            <form action="<?= BASE_URL ?>/rutas/editar-tarifa" method="POST" class="d-flex align-items-center gap-1">
+                                                <input type="hidden" name="id" value="<?= $r['id'] ?>">
+                                                <div class="input-group input-group-sm" style="width: 140px;">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" step="100" name="tarifa_base" class="form-control fw-bold text-success" value="<?= $r['tarifa_base'] ?>" required>
+                                                    <button type="submit" class="btn btn-outline-success" title="Guardar Nuevo Precio">
+                                                        <i class="fa-solid fa-check"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                            <?php else: ?>
+                                            <span class="fw-bold text-success">$<?= number_format($r['tarifa_base'], 0, ',', '.') ?></span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td>
                                             <span class="badge bg-<?= $r['estado'] === 'activa' ? 'success' : 'danger' ?> text-uppercase">
                                                 <?= $r['estado'] ?>

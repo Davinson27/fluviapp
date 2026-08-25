@@ -11,8 +11,9 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `nombre` VARCHAR(100) NOT NULL,
     `email` VARCHAR(100) NOT NULL UNIQUE,
+    `documento` VARCHAR(30) NULL,
     `password` VARCHAR(255) NOT NULL,
-    `rol` ENUM('admin', 'operador', 'taquilla', 'capitan') NOT NULL DEFAULT 'taquilla',
+    `rol` ENUM('admin', 'operador', 'taquilla', 'capitan', 'cliente') NOT NULL DEFAULT 'cliente',
     `estado` ENUM('activo', 'inactivo') NOT NULL DEFAULT 'activo',
     `telefono` VARCHAR(20) NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -80,6 +81,7 @@ CREATE TABLE IF NOT EXISTS `viajes` (
 CREATE TABLE IF NOT EXISTS `boletos` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `viaje_id` INT NOT NULL,
+    `usuario_id` INT NULL,
     `codigo_boleto` VARCHAR(40) NOT NULL UNIQUE,
     `pasajero_documento` VARCHAR(30) NOT NULL,
     `pasajero_nombre` VARCHAR(120) NOT NULL,
@@ -91,6 +93,7 @@ CREATE TABLE IF NOT EXISTS `boletos` (
     `vendido_por_id` INT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`viaje_id`) REFERENCES `viajes`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL,
     FOREIGN KEY (`vendido_por_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -98,6 +101,7 @@ CREATE TABLE IF NOT EXISTS `boletos` (
 CREATE TABLE IF NOT EXISTS `cargas_encomiendas` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
     `viaje_id` INT NOT NULL,
+    `usuario_id` INT NULL,
     `guia_numero` VARCHAR(40) NOT NULL UNIQUE,
     `remitente_nombre` VARCHAR(100) NOT NULL,
     `remitente_telefono` VARCHAR(30) NOT NULL,
@@ -111,5 +115,6 @@ CREATE TABLE IF NOT EXISTS `cargas_encomiendas` (
     `registrado_por_id` INT NULL,
     `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (`viaje_id`) REFERENCES `viajes`(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`usuario_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL,
     FOREIGN KEY (`registrado_por_id`) REFERENCES `usuarios`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -64,6 +64,30 @@ class Boleto extends Model {
         return $stmt->fetchAll();
     }
 
+    public function getByUsuario(int $usuarioId): array {
+        $sql = "
+            SELECT b.*,
+                   v.codigo_viaje, v.fecha_salida, v.hora_salida, v.estado AS viaje_estado,
+                   r.distancia_km, r.duracion_estimada_min,
+                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio,
+                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio,
+                   e.nombre AS embarcacion_nombre, e.matricula AS embarcacion_matricula,
+                   cap.nombre AS capitan_nombre
+            FROM `{$this->table}` b
+            JOIN viajes v ON b.viaje_id = v.id
+            JOIN rutas r ON v.ruta_id = r.id
+            JOIN muelles mo ON r.muelle_origen_id = mo.id
+            JOIN muelles md ON r.muelle_destino_id = md.id
+            JOIN embarcaciones e ON v.embarcacion_id = e.id
+            LEFT JOIN usuarios cap ON v.capitan_id = cap.id
+            WHERE b.usuario_id = :usuario_id
+            ORDER BY b.id DESC
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['usuario_id' => $usuarioId]);
+        return $stmt->fetchAll();
+    }
+
     public function emitir(array $data): int {
         $this->db->beginTransaction();
         try {
@@ -89,16 +113,17 @@ class Boleto extends Model {
 
             $stmtInsert = $this->db->prepare("
                 INSERT INTO `{$this->table}` (
-                    viaje_id, codigo_boleto, pasajero_documento, pasajero_nombre, 
+                    viaje_id, usuario_id, codigo_boleto, pasajero_documento, pasajero_nombre, 
                     pasajero_telefono, numero_asiento, precio_pagado, metodo_pago, estado, vendido_por_id
                 )
                 VALUES (
-                    :viaje_id, :codigo_boleto, :pasajero_documento, :pasajero_nombre,
+                    :viaje_id, :usuario_id, :codigo_boleto, :pasajero_documento, :pasajero_nombre,
                     :pasajero_telefono, :numero_asiento, :precio_pagado, :metodo_pago, :estado, :vendido_por_id
                 )
             ");
             $stmtInsert->execute([
                 'viaje_id'           => (int)$data['viaje_id'],
+                'usuario_id'         => !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null,
                 'codigo_boleto'      => $codigoBoleto,
                 'pasajero_documento' => trim($data['pasajero_documento']),
                 'pasajero_nombre'    => trim($data['pasajero_nombre']),

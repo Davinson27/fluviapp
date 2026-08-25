@@ -13,14 +13,20 @@ class AuthHelper {
         SessionHelper::init();
         if (self::check()) {
             return [
-                'id'       => $_SESSION['user_id'],
-                'nombre'   => $_SESSION['user_name'] ?? '',
-                'email'    => $_SESSION['user_email'] ?? '',
-                'rol'      => $_SESSION['user_rol'] ?? 'taquilla',
-                'telefono' => $_SESSION['user_telefono'] ?? ''
+                'id'        => $_SESSION['user_id'],
+                'nombre'    => $_SESSION['user_name'] ?? '',
+                'email'     => $_SESSION['user_email'] ?? '',
+                'documento' => $_SESSION['user_documento'] ?? '',
+                'rol'       => $_SESSION['user_rol'] ?? 'cliente',
+                'telefono'  => $_SESSION['user_telefono'] ?? ''
             ];
         }
         return null;
+    }
+
+    public static function isCliente(): bool {
+        $u = self::user();
+        return ($u['rol'] ?? '') === 'cliente';
     }
 
     public static function requireAuth(): void {
@@ -36,7 +42,7 @@ class AuthHelper {
         $user = self::user();
         if (!$user || !in_array($user['rol'], $allowedRoles)) {
             SessionHelper::setFlash('danger', 'No tiene permisos suficientes para acceder a este módulo.');
-            header('Location: ' . BASE_URL . '/dashboard');
+            header('Location: ' . BASE_URL . '/portal');
             exit;
         }
     }
@@ -44,11 +50,12 @@ class AuthHelper {
     public static function login(array $userData): void {
         SessionHelper::init();
         session_regenerate_id(true);
-        $_SESSION['user_id']       = $userData['id'];
-        $_SESSION['user_name']     = $userData['nombre'];
-        $_SESSION['user_email']    = $userData['email'];
-        $_SESSION['user_rol']      = $userData['rol'];
-        $_SESSION['user_telefono'] = $userData['telefono'] ?? '';
+        $_SESSION['user_id']        = $userData['id'];
+        $_SESSION['user_name']      = $userData['nombre'];
+        $_SESSION['user_email']     = $userData['email'];
+        $_SESSION['user_documento'] = $userData['documento'] ?? '';
+        $_SESSION['user_rol']       = $userData['rol'];
+        $_SESSION['user_telefono']  = $userData['telefono'] ?? '';
     }
 
     public static function logout(): void {

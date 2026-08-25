@@ -110,6 +110,25 @@ class ViajesController extends Controller {
         $this->redirect('/viajes');
     }
 
+    public function actualizarPrecio(): void {
+        AuthHelper::requireRoles(['admin', 'operador']);
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/viajes');
+        }
+
+        $viajeId = (int)($_POST['viaje_id'] ?? 0);
+        $precio = (float)($_POST['precio_pasaje'] ?? 0);
+
+        if ($viajeId > 0 && $precio > 0) {
+            $this->viajeModel->updatePrecio($viajeId, $precio);
+            SessionHelper::setFlash('success', 'Precio del pasaje actualizado a $' . number_format($precio, 0, ',', '.') . ' COP.');
+        } else {
+            SessionHelper::setFlash('danger', 'Ingrese un precio válido para el viaje.');
+        }
+
+        $this->redirect('/viajes');
+    }
+
     public function manifiesto(): void {
         $viajeId = (int)($_GET['id'] ?? 0);
         $viaje = $this->viajeModel->findWithDetails($viajeId);

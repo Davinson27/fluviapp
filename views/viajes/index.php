@@ -46,7 +46,20 @@
                                 </td>
                                 <td>
                                     <strong><?= htmlspecialchars($v['origen_nombre']) ?></strong> &rarr; <strong><?= htmlspecialchars($v['destino_nombre']) ?></strong>
-                                    <div class="small text-muted">Tarifa: $<?= number_format($v['precio_pasaje'], 0, ',', '.') ?></div>
+                                    <div class="small text-muted">
+                                        <?php if (in_array(AuthHelper::user()['rol'], ['admin', 'operador'])): ?>
+                                        <form action="<?= BASE_URL ?>/viajes/editar-precio" method="POST" class="d-inline-flex align-items-center gap-1 mt-1">
+                                            <input type="hidden" name="viaje_id" value="<?= $v['id'] ?>">
+                                            <div class="input-group input-group-sm" style="width: 130px;">
+                                                <span class="input-group-text p-1">$</span>
+                                                <input type="number" step="100" name="precio_pasaje" class="form-control form-control-sm fw-bold text-success p-1" value="<?= $v['precio_pasaje'] ?>" required>
+                                                <button type="submit" class="btn btn-outline-success btn-sm p-1" title="Actualizar Precio"><i class="fa-solid fa-check"></i></button>
+                                            </div>
+                                        </form>
+                                        <?php else: ?>
+                                        Tarifa: $<?= number_format($v['precio_pasaje'], 0, ',', '.') ?>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                                 <td>
                                     <div><i class="fa-solid fa-ship me-1 text-info"></i><?= htmlspecialchars($v['embarcacion_nombre']) ?></div>
