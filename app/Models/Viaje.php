@@ -117,6 +117,26 @@ class Viaje extends Model {
         return $stmt->execute(['id' => $id, 'precio' => $precio]);
     }
 
+    public function updateItinerario(int $id, array $data): bool {
+        $stmt = $this->db->prepare("
+            UPDATE `{$this->table}`
+            SET capitan_id = :capitan_id,
+                fecha_salida = :fecha_salida,
+                hora_salida = :hora_salida,
+                precio_pasaje = :precio_pasaje,
+                observaciones = :observaciones
+            WHERE id = :id
+        ");
+        return $stmt->execute([
+            'id'             => $id,
+            'capitan_id'     => !empty($data['capitan_id']) ? (int)$data['capitan_id'] : null,
+            'fecha_salida'   => $data['fecha_salida'],
+            'hora_salida'    => $data['hora_salida'],
+            'precio_pasaje'  => (float)$data['precio_pasaje'],
+            'observaciones'  => $data['observaciones'] ?? null,
+        ]);
+    }
+
     public function getViajesDisponibles(array $filtros = []): array {
         $sql = "
             SELECT v.*,

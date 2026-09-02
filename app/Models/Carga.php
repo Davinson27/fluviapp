@@ -90,11 +90,17 @@ class Carga extends Model {
             $peso = (float)$data['peso_kg'];
 
             // Verificar capacidad disponible
-            $stmtViaje = $this->db->prepare("SELECT capacidad_carga_disponible_kg FROM viajes WHERE id = :id FOR UPDATE");
+            $stmtViaje = $this->db->prepare("SELECT capacidad_carga_disponible_kg, estado FROM viajes WHERE id = :id FOR UPDATE");
             $stmtViaje->execute(['id' => (int)$data['viaje_id']]);
             $viaje = $stmtViaje->fetch();
 
-            if (!$viaje || (float)$viaje['capacidad_carga_disponible_kg'] < $peso) {
+            if (!$viaje) {
+                throw new Exception("El viaje seleccionado no existe.");
+            }
+            if (!in_array($viaje['estado'], ['programado', 'en_embarque'], true)) {
+                throw new Exception("El viaje no admite registro de carga en su estado actual.");
+            }
+            if ((float)$viaje['capacidad_carga_disponible_kg'] < $peso) {
                 throw new Exception("El peso de la carga excede la capacidad de bodega disponible para este viaje.");
             }
 
@@ -143,7 +149,30 @@ class Carga extends Model {
     }
 
     public function updateEstado(int $id, string $estado): bool {
-        $stmt = $this->db->prepare("UPDATE `{$this->table}` SET estado = :estado WHERE id = :id");
-        return $stmt->execute(['id' => $id, 'estado' => $estado]);
+        $this->db->beginTransaction();
+        try {
+            $stmt = $this->db->prepare("SELECT id, viaje_id, peso_kg, estado FROM `{$this->table}` WHERE id = :id FOR UPDATE");
+            $stmt->execute(['id' => $id]);
+            $carga = $stmt->fetch();
+            if (!$carga) {
+                $this->db->rollBack();
+                return false;
+            }
+
+            $estadoAnterior = $carga['estado'];
+            $upd = $this->db->prepare("UPDATE `{$this->table}` SET estado = :estado WHERE id = :id");
+            $upd->execute(['id' => $id, 'estado' => $estado]);
+
+            if ($estadoAnterior !== 'cancelada' && $estado === 'cancelada') {
+                $rest = $this->db->prepare("UPDATE viajes SET capacidad_carga_disponible_kg = capacidad_carga_disponible_kg + :peso WHERE id = :id");
+                $rest->execute(['peso' => (float)$carga['peso_kg'], 'id' => (int)$carga['viaje_id']]);
+            }
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
     }
 }

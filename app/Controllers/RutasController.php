@@ -12,7 +12,7 @@ class RutasController extends Controller {
     private Muelle $muelleModel;
 
     public function __construct() {
-        AuthHelper::requireAuth();
+        AuthHelper::requireStaff();
         $this->rutaModel = new Ruta();
         $this->muelleModel = new Muelle();
     }

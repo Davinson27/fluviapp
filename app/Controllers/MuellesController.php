@@ -10,7 +10,7 @@ class MuellesController extends Controller {
     private Muelle $muelleModel;
 
     public function __construct() {
-        AuthHelper::requireAuth();
+        AuthHelper::requireStaff();
         $this->muelleModel = new Muelle();
     }
 

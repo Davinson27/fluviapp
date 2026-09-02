@@ -8,6 +8,11 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/app/Helpers/SessionHelper.php';
 require_once __DIR__ . '/app/Helpers/AuthHelper.php';
 
+SessionHelper::init();
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    SessionHelper::requireCsrf();
+}
+
 // Obtener ruta solicitada
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';

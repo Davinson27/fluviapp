@@ -91,25 +91,48 @@ class Boleto extends Model {
     public function emitir(array $data): int {
         $this->db->beginTransaction();
         try {
-            // Verificar disponibilidad de cupos
-            $stmtViaje = $this->db->prepare("SELECT cupos_disponibles, precio_pasaje FROM viajes WHERE id = :id FOR UPDATE");
+            $stmtViaje = $this->db->prepare("
+                SELECT v.cupos_disponibles, v.precio_pasaje, v.estado,
+                       e.capacidad_pasajeros
+                FROM viajes v
+                JOIN embarcaciones e ON e.id = v.embarcacion_id
+                WHERE v.id = :id
+                FOR UPDATE
+            ");
             $stmtViaje->execute(['id' => (int)$data['viaje_id']]);
             $viaje = $stmtViaje->fetch();
 
-            if (!$viaje || (int)$viaje['cupos_disponibles'] <= 0) {
+            if (!$viaje) {
+                throw new Exception("El viaje seleccionado no existe.");
+            }
+            if (!in_array($viaje['estado'], ['programado', 'en_embarque'], true)) {
+                throw new Exception("El viaje no admite venta de pasajes en su estado actual.");
+            }
+            if ((int)$viaje['cupos_disponibles'] <= 0) {
                 throw new Exception("No hay cupos disponibles en el viaje seleccionado.");
             }
 
-            // Generar código único de boleto
             $codigoBoleto = 'BOL-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
 
-            // Calcular número de asiento correlativo
             $stmtAsiento = $this->db->prepare("SELECT COUNT(*) AS total FROM boletos WHERE viaje_id = :viaje_id AND estado != 'cancelado'");
             $stmtAsiento->execute(['viaje_id' => (int)$data['viaje_id']]);
             $rowAsiento = $stmtAsiento->fetch();
             $numAsiento = ((int)($rowAsiento['total'] ?? 0)) + 1;
 
-            $precio = !empty($data['precio_pagado']) ? (float)$data['precio_pagado'] : (float)$viaje['precio_pasaje'];
+            $capacidad = (int)$viaje['capacidad_pasajeros'];
+            if ($capacidad > 0 && $numAsiento > $capacidad) {
+                throw new Exception("No hay asientos disponibles en la embarcación.");
+            }
+
+            $precio = (float)$viaje['precio_pasaje'];
+            if (!empty($data['allow_custom_price']) && isset($data['precio_pagado']) && (float)$data['precio_pagado'] > 0) {
+                $precio = (float)$data['precio_pagado'];
+            }
+
+            $metodo = $data['metodo_pago'] ?? 'efectivo';
+            if (!in_array($metodo, ['efectivo', 'transferencia', 'tarjeta'], true)) {
+                $metodo = 'efectivo';
+            }
 
             $stmtInsert = $this->db->prepare("
                 INSERT INTO `{$this->table}` (
@@ -130,15 +153,18 @@ class Boleto extends Model {
                 'pasajero_telefono'  => trim($data['pasajero_telefono'] ?? ''),
                 'numero_asiento'     => $numAsiento,
                 'precio_pagado'      => $precio,
-                'metodo_pago'        => $data['metodo_pago'] ?? 'efectivo',
+                'metodo_pago'        => $metodo,
                 'estado'             => 'valido',
                 'vendido_por_id'     => !empty($data['vendido_por_id']) ? (int)$data['vendido_por_id'] : null
             ]);
             $boletoId = (int)$this->db->lastInsertId();
 
             // Descontar cupo del viaje
-            $stmtUpdateViaje = $this->db->prepare("UPDATE viajes SET cupos_disponibles = cupos_disponibles - 1 WHERE id = :id");
+            $stmtUpdateViaje = $this->db->prepare("UPDATE viajes SET cupos_disponibles = cupos_disponibles - 1 WHERE id = :id AND cupos_disponibles > 0");
             $stmtUpdateViaje->execute(['id' => (int)$data['viaje_id']]);
+            if ($stmtUpdateViaje->rowCount() !== 1) {
+                throw new Exception("No hay cupos disponibles en el viaje seleccionado.");
+            }
 
             $this->db->commit();
             return $boletoId;

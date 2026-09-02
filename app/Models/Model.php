@@ -12,6 +12,9 @@ abstract class Model {
     }
 
     public function all(string $orderBy = 'id DESC'): array {
+        if (!preg_match('/^[a-zA-Z0-9_]+(\s+(ASC|DESC))?$/i', $orderBy)) {
+            $orderBy = 'id DESC';
+        }
         $stmt = $this->db->query("SELECT * FROM `{$this->table}` ORDER BY {$orderBy}");
         return $stmt->fetchAll();
     }

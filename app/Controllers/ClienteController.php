@@ -18,7 +18,7 @@ class ClienteController extends Controller {
     private Carga $cargaModel;
 
     public function __construct() {
-        AuthHelper::requireAuth();
+        AuthHelper::requireCliente();
         $this->viajeModel = new Viaje();
         $this->rutaModel = new Ruta();
         $this->muelleModel = new Muelle();
@@ -79,8 +79,7 @@ class ClienteController extends Controller {
         $doc = trim($_POST['pasajero_documento'] ?? '');
         $nombre = trim($_POST['pasajero_nombre'] ?? '');
         $tel = trim($_POST['pasajero_telefono'] ?? '');
-        $metodo = $_POST['metodo_pago'] ?? 'transferencia';
-        $precio = (float)($_POST['precio_pagado'] ?? 0);
+        $metodo = $this->sanitizePago($_POST['metodo_pago'] ?? 'transferencia');
         $usuario = AuthHelper::user();
 
         if ($viajeId === 0 || empty($doc) || empty($nombre)) {
@@ -95,7 +94,6 @@ class ClienteController extends Controller {
                 'pasajero_documento' => $doc,
                 'pasajero_nombre'    => $nombre,
                 'pasajero_telefono'  => $tel,
-                'precio_pagado'      => $precio,
                 'metodo_pago'        => $metodo,
                 'vendido_por_id'     => $usuario['id']
             ]);
@@ -103,7 +101,7 @@ class ClienteController extends Controller {
             SessionHelper::setFlash('success', '¡Tiquete comprado con éxito! Ya puedes ver tu ruta y tiquete.');
             $this->redirect('/cliente/ver-ruta?id=' . $boletoId);
         } catch (Exception $e) {
-            SessionHelper::setFlash('danger', 'Error al procesar la compra: ' . $e->getMessage());
+            SessionHelper::setFlash('danger', $this->userErrorMessage($e, 'Error al procesar la compra.'));
             $this->redirect('/cliente/comprar?viaje_id=' . $viajeId);
         }
     }
@@ -124,19 +122,9 @@ class ClienteController extends Controller {
 
         $boleto = $this->boletoModel->findWithDetails($boletoId);
 
-        if (!$boleto) {
-            SessionHelper::setFlash('danger', 'El tiquete solicitado no fue encontrado.');
+        if (!$boleto || (int)($boleto['usuario_id'] ?? 0) !== (int)$usuario['id']) {
+            SessionHelper::setFlash('danger', 'No tiene permisos para ver este tiquete.');
             $this->redirect('/cliente/mis-boletos');
-        }
-
-        // Si es cliente, verificar que el boleto le pertenezca o coincida con su documento
-        if (AuthHelper::isCliente()) {
-            if (!empty($boleto['usuario_id']) && (int)$boleto['usuario_id'] !== (int)$usuario['id']) {
-                if ($boleto['pasajero_documento'] !== ($usuario['documento'] ?? '')) {
-                    SessionHelper::setFlash('danger', 'No tiene permisos para ver este tiquete.');
-                    $this->redirect('/cliente/mis-boletos');
-                }
-            }
         }
 
         $this->render('cliente/ver_ruta', [
@@ -195,7 +183,7 @@ class ClienteController extends Controller {
             SessionHelper::setFlash('success', '¡Guía de encomienda solicitada con éxito!');
             $this->redirect('/cliente/mis-encomiendas');
         } catch (Exception $e) {
-            SessionHelper::setFlash('danger', 'Error al procesar la encomienda: ' . $e->getMessage());
+            SessionHelper::setFlash('danger', $this->userErrorMessage($e, 'Error al procesar la encomienda.'));
             $this->redirect('/cliente/enviar-encomienda');
         }
     }

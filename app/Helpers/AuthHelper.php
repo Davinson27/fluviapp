@@ -29,6 +29,11 @@ class AuthHelper {
         return ($u['rol'] ?? '') === 'cliente';
     }
 
+    public static function isStaff(): bool {
+        $u = self::user();
+        return $u !== null && in_array($u['rol'], ROLES_STAFF, true);
+    }
+
     public static function requireAuth(): void {
         if (!self::check()) {
             SessionHelper::setFlash('warning', 'Debe iniciar sesión para acceder al sistema.');
@@ -40,11 +45,20 @@ class AuthHelper {
     public static function requireRoles(array $allowedRoles): void {
         self::requireAuth();
         $user = self::user();
-        if (!$user || !in_array($user['rol'], $allowedRoles)) {
+        if (!$user || !in_array($user['rol'], $allowedRoles, true)) {
             SessionHelper::setFlash('danger', 'No tiene permisos suficientes para acceder a este módulo.');
-            header('Location: ' . BASE_URL . '/portal');
+            $dest = self::isCliente() ? '/portal' : '/dashboard';
+            header('Location: ' . BASE_URL . $dest);
             exit;
         }
+    }
+
+    public static function requireStaff(): void {
+        self::requireRoles(ROLES_STAFF);
+    }
+
+    public static function requireCliente(): void {
+        self::requireRoles(['cliente']);
     }
 
     public static function login(array $userData): void {
@@ -64,8 +78,7 @@ class AuthHelper {
         if (ini_get("session.use_cookies")) {
             $params = session_get_cookie_params();
             setcookie(session_name(), '', time() - 42000,
-                $params["path"], $params["domain"],
-                $params["secure"], $params["httponly"]
+                $params["path"], $params["domain"] ?? '', $params["secure"], $params["httponly"]
             );
         }
         session_destroy();

@@ -12,7 +12,7 @@ class CargasController extends Controller {
     private Viaje $viajeModel;
 
     public function __construct() {
-        AuthHelper::requireAuth();
+        AuthHelper::requireStaff();
         $this->cargaModel = new Carga();
         $this->viajeModel = new Viaje();
     }
@@ -72,7 +72,7 @@ class CargasController extends Controller {
             SessionHelper::setFlash('success', 'Guía de carga fluvial registrada exitosamente.');
             $this->redirect('/cargas');
         } catch (Exception $e) {
-            SessionHelper::setFlash('danger', 'Error al registrar la carga: ' . $e->getMessage());
+            SessionHelper::setFlash('danger', $this->userErrorMessage($e, 'Error al registrar la carga.'));
             $this->redirect('/cargas/crear');
         }
     }

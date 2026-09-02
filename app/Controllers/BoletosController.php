@@ -12,7 +12,7 @@ class BoletosController extends Controller {
     private Viaje $viajeModel;
 
     public function __construct() {
-        AuthHelper::requireAuth();
+        AuthHelper::requireStaff();
         $this->boletoModel = new Boleto();
         $this->viajeModel = new Viaje();
     }
@@ -62,14 +62,15 @@ class BoletosController extends Controller {
                 'pasajero_nombre'    => $nombre,
                 'pasajero_telefono'  => $tel,
                 'precio_pagado'      => $precio,
-                'metodo_pago'        => $metodo,
+                'allow_custom_price' => true,
+                'metodo_pago'        => $this->sanitizePago($metodo),
                 'vendido_por_id'     => $user['id'] ?? null
             ]);
 
             SessionHelper::setFlash('success', 'Boleto emitido exitosamente.');
             $this->redirect('/boletos/ticket?id=' . $boletoId);
         } catch (Exception $e) {
-            SessionHelper::setFlash('danger', 'Error al emitir el boleto: ' . $e->getMessage());
+            SessionHelper::setFlash('danger', $this->userErrorMessage($e, 'Error al emitir el boleto.'));
             $this->redirect('/boletos/crear');
         }
     }

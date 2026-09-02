@@ -20,7 +20,7 @@ class ViajesController extends Controller {
     private Carga $cargaModel;
 
     public function __construct() {
-        AuthHelper::requireAuth();
+        AuthHelper::requireStaff();
         $this->viajeModel = new Viaje();
         $this->rutaModel = new Ruta();
         $this->embarcacionModel = new Embarcacion();

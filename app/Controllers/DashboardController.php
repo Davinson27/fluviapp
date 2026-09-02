@@ -19,6 +19,10 @@ class DashboardController extends Controller {
 
     public function __construct() {
         AuthHelper::requireAuth();
+        if (AuthHelper::isCliente()) {
+            $this->redirect('/portal');
+        }
+        AuthHelper::requireStaff();
         $this->viajeModel = new Viaje();
         $this->embarcacionModel = new Embarcacion();
         $this->boletoModel = new Boleto();
