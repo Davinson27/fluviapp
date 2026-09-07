@@ -7,6 +7,7 @@
             </div>
             <div class="card-body p-4">
                 <form action="<?= BASE_URL ?>/cliente/guardar-encomienda" method="POST">
+                    <?= SessionHelper::csrfField() ?>
                     <!-- Selección de Itinerario / Ruta -->
                     <div class="mb-4">
                         <label class="form-label fw-semibold text-secondary">Seleccionar Itinerario Fluvial *</label>
@@ -18,6 +19,9 @@
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <?php if (!empty($userDepto)): ?>
+                            <small class="text-muted d-block mt-1"><i class="fa-solid fa-location-dot me-1 text-warning"></i>Mostrando exclusivamente salidas dentro del departamento de <strong><?= htmlspecialchars($userDepto) ?></strong>.</small>
+                        <?php endif; ?>
                     </div>
 
                     <div class="row g-3">

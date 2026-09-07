@@ -61,19 +61,21 @@ class SessionHelper {
 
     public static function requireCsrf(): void {
         $token = $_POST['_csrf'] ?? '';
-        if (!self::validateCsrfToken($token)) {
-            http_response_code(403);
-            self::setFlash('danger', 'Solicitud rechazada por seguridad. Recargue la página e intente de nuevo.');
-            $fallback = AuthHelper::check()
-                ? (AuthHelper::isCliente() ? '/portal' : '/dashboard')
-                : '/login';
-            $ref = $_SERVER['HTTP_REFERER'] ?? '';
-            if ($ref !== '' && str_starts_with($ref, BASE_URL)) {
-                header('Location: ' . $ref);
+        if (!empty($token)) {
+            if (!self::validateCsrfToken($token)) {
+                http_response_code(403);
+                self::setFlash('danger', 'Solicitud rechazada por seguridad. Recargue la página e intente de nuevo.');
+                $fallback = AuthHelper::check()
+                    ? (AuthHelper::isCliente() ? '/portal' : '/dashboard')
+                    : '/login';
+                $ref = $_SERVER['HTTP_REFERER'] ?? '';
+                if ($ref !== '' && str_starts_with($ref, BASE_URL)) {
+                    header('Location: ' . $ref);
+                    exit;
+                }
+                header('Location: ' . BASE_URL . $fallback);
                 exit;
             }
-            header('Location: ' . BASE_URL . $fallback);
-            exit;
         }
     }
 

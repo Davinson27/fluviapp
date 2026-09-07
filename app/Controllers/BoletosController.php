@@ -12,32 +12,39 @@ class BoletosController extends Controller {
     private Viaje $viajeModel;
 
     public function __construct() {
-        AuthHelper::requireStaff();
+        AuthHelper::requireAuth();
         $this->boletoModel = new Boleto();
         $this->viajeModel = new Viaje();
     }
 
     public function index(): void {
-        $boletos = $this->boletoModel->allWithViaje();
+        AuthHelper::requireStaff();
+        $deptScope = AuthHelper::getDepartmentFilter();
+        $boletos = $this->boletoModel->allWithViaje($deptScope);
         $this->render('boletos/index', [
             'pageTitle' => 'Control de Boletería y Pasajes - ' . APP_NAME,
-            'boletos'   => $boletos
+            'boletos'   => $boletos,
+            'deptScope' => $deptScope
         ]);
     }
 
     public function create(): void {
-        // Obtener viajes disponibles con cupos
-        $viajes = $this->viajeModel->allWithDetails('programado');
-        $viajesEmbarque = $this->viajeModel->allWithDetails('en_embarque');
+        AuthHelper::requireStaff();
+        $deptScope = AuthHelper::getDepartmentFilter();
+        // Obtener viajes disponibles con cupos filtrados por departamento si aplica
+        $viajes = $this->viajeModel->allWithDetails('programado', $deptScope);
+        $viajesEmbarque = $this->viajeModel->allWithDetails('en_embarque', $deptScope);
         $viajesDisponibles = array_merge($viajes, $viajesEmbarque);
 
         $this->render('boletos/create', [
             'pageTitle'         => 'Emitir Boleto de Pasaje - ' . APP_NAME,
-            'viajesDisponibles' => $viajesDisponibles
+            'viajesDisponibles' => $viajesDisponibles,
+            'deptScope'         => $deptScope
         ]);
     }
 
     public function store(): void {
+        AuthHelper::requireStaff();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->redirect('/boletos');
         }
@@ -53,6 +60,15 @@ class BoletosController extends Controller {
         if ($viajeId === 0 || empty($doc) || empty($nombre)) {
             SessionHelper::setFlash('danger', 'Complete los datos obligatorios del pasajero y seleccione un viaje.');
             $this->redirect('/boletos/crear');
+        }
+
+        $deptScope = AuthHelper::getDepartmentFilter();
+        if (!empty($deptScope)) {
+            $viaje = $this->viajeModel->findWithDetails($viajeId);
+            if ($viaje && ($viaje['origen_depto'] ?? '') !== $deptScope && ($viaje['destino_depto'] ?? '') !== $deptScope) {
+                SessionHelper::setFlash('danger', "No tiene permisos para emitir boletos para viajes fuera de su departamento ({$deptScope}).");
+                $this->redirect('/boletos/crear');
+            }
         }
 
         try {
@@ -81,11 +97,40 @@ class BoletosController extends Controller {
 
         if (!$boleto) {
             SessionHelper::setFlash('danger', 'El boleto no fue encontrado.');
-            $this->redirect('/boletos');
+            $dest = AuthHelper::isCliente() ? '/cliente/mis-boletos' : '/boletos';
+            $this->redirect($dest);
+        }
+
+        $user = AuthHelper::user();
+        if (!AuthHelper::isStaff() && (int)($boleto['usuario_id'] ?? 0) !== (int)($user['id'] ?? 0)) {
+            SessionHelper::setFlash('danger', 'No tiene permisos para ver este boleto.');
+            $this->redirect('/portal');
         }
 
         $this->renderSingle('boletos/ticket', [
             'pageTitle' => 'Tiquete de Pasaje - ' . $boleto['codigo_boleto'],
+            'boleto'    => $boleto
+        ]);
+    }
+
+    public function factura(): void {
+        $id = (int)($_GET['id'] ?? 0);
+        $boleto = $this->boletoModel->findWithDetails($id);
+
+        if (!$boleto) {
+            SessionHelper::setFlash('danger', 'El boleto no fue encontrado.');
+            $dest = AuthHelper::isCliente() ? '/cliente/mis-boletos' : '/boletos';
+            $this->redirect($dest);
+        }
+
+        $user = AuthHelper::user();
+        if (!AuthHelper::isStaff() && (int)($boleto['usuario_id'] ?? 0) !== (int)($user['id'] ?? 0)) {
+            SessionHelper::setFlash('danger', 'No tiene permisos para ver o descargar esta factura.');
+            $this->redirect('/portal');
+        }
+
+        $this->renderSingle('cliente/factura_boleto', [
+            'pageTitle' => 'Factura Digital de Boleto - ' . $boleto['codigo_boleto'],
             'boleto'    => $boleto
         ]);
     }

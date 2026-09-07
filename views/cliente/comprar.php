@@ -37,6 +37,7 @@
 
                 <!-- Formulario de Compra -->
                 <form action="<?= BASE_URL ?>/cliente/procesar-compra" method="POST">
+                    <?= SessionHelper::csrfField() ?>
                     <input type="hidden" name="viaje_id" value="<?= $viaje['id'] ?>">
                     <input type="hidden" name="precio_pagado" value="<?= $viaje['precio_pasaje'] ?>">
 

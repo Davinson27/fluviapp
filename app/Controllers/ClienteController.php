@@ -9,6 +9,7 @@ require_once ROOT_PATH . '/app/Models/Ruta.php';
 require_once ROOT_PATH . '/app/Models/Muelle.php';
 require_once ROOT_PATH . '/app/Models/Boleto.php';
 require_once ROOT_PATH . '/app/Models/Carga.php';
+require_once ROOT_PATH . '/app/Services/AsistenteFluvialIA.php';
 
 class ClienteController extends Controller {
     private Viaje $viajeModel;
@@ -16,6 +17,7 @@ class ClienteController extends Controller {
     private Muelle $muelleModel;
     private Boleto $boletoModel;
     private Carga $cargaModel;
+    private AsistenteFluvialIA $asistenteIA;
 
     public function __construct() {
         AuthHelper::requireCliente();
@@ -24,30 +26,77 @@ class ClienteController extends Controller {
         $this->muelleModel = new Muelle();
         $this->boletoModel = new Boleto();
         $this->cargaModel = new Carga();
+        $this->asistenteIA = new AsistenteFluvialIA();
     }
 
     public function portal(): void {
-        $muelles = $this->muelleModel->getActivos();
+        $usuario = AuthHelper::user();
+        $userDepto = $usuario['departamento'] ?? '';
         
         $origenId = (int)($_GET['origen_id'] ?? 0);
         $destinoId = (int)($_GET['destino_id'] ?? 0);
         $fecha = $_GET['fecha'] ?? '';
 
         $filtros = [];
+        if (!empty($userDepto)) {
+            $muelles = $this->muelleModel->getByDepartamento($userDepto);
+            $filtros['departamento'] = $userDepto;
+        } else {
+            $muelles = $this->muelleModel->getActivos();
+        }
+
         if ($origenId > 0) $filtros['origen_id'] = $origenId;
         if ($destinoId > 0) $filtros['destino_id'] = $destinoId;
         if (!empty($fecha)) $filtros['fecha'] = $fecha;
 
         $viajes = $this->viajeModel->getViajesDisponibles($filtros);
 
+        // Si no hay viajes y el usuario aplicó filtros de búsqueda (especialmente con fecha seleccionada)
+        $sugerenciaIA = null;
+        $busquedaRealizada = ($origenId > 0 || $destinoId > 0 || !empty($fecha));
+
+        if (empty($viajes) && $busquedaRealizada) {
+            $origenMuelle = ($origenId > 0) ? $this->muelleModel->find($origenId) : null;
+            $destinoMuelle = ($destinoId > 0) ? $this->muelleModel->find($destinoId) : null;
+
+            // Verificar si la ruta geográfica existe
+            $existeRuta = false;
+            if ($origenId > 0 && $destinoId > 0) {
+                $rutaObj = $this->rutaModel->findByMuelles($origenId, $destinoId);
+                $existeRuta = ($rutaObj !== null);
+            }
+
+            // Buscar viajes alternativos en otras fechas para esta ruta o muelles
+            $alternativas = $this->viajeModel->getFechasAlternativasConViajes(
+                $origenId,
+                $destinoId,
+                $fecha,
+                $userDepto
+            );
+
+            // Generar la respuesta inteligente por IA
+            $sugerenciaIA = $this->asistenteIA->generarSugerencia(
+                $usuario,
+                $fecha,
+                $origenMuelle,
+                $destinoMuelle,
+                $alternativas,
+                $existeRuta
+            );
+        }
+
         $this->render('cliente/portal', [
-            'pageTitle'  => 'Explorar Rutas y Horarios Fluviales - ' . APP_NAME,
-            'muelles'    => $muelles,
-            'viajes'     => $viajes,
-            'filtros'    => [
-                'origen_id'  => $origenId,
-                'destino_id' => $destinoId,
-                'fecha'      => $fecha
+            'pageTitle'          => 'Explorar Rutas y Horarios Fluviales - ' . APP_NAME,
+            'muelles'            => $muelles,
+            'viajes'             => $viajes,
+            'userDepto'          => $userDepto,
+            'usuario'            => $usuario,
+            'busquedaRealizada'  => $busquedaRealizada,
+            'sugerenciaIA'       => $sugerenciaIA,
+            'filtros'            => [
+                'origen_id'   => $origenId,
+                'destino_id'  => $destinoId,
+                'fecha'       => $fecha
             ]
         ]);
     }
@@ -62,6 +111,14 @@ class ClienteController extends Controller {
         }
 
         $usuario = AuthHelper::user();
+        $userDepto = $usuario['departamento'] ?? '';
+
+        if (!empty($userDepto)) {
+            if (($viaje['origen_depto'] ?? '') !== $userDepto && ($viaje['destino_depto'] ?? '') !== $userDepto) {
+                SessionHelper::setFlash('danger', "El viaje seleccionado no pertenece a su departamento registrado ({$userDepto}). Solo puede viajar en rutas de su departamento.");
+                $this->redirect('/portal');
+            }
+        }
 
         $this->render('cliente/comprar', [
             'pageTitle' => 'Comprar Tiquete Fluvial - ' . APP_NAME,
@@ -81,10 +138,19 @@ class ClienteController extends Controller {
         $tel = trim($_POST['pasajero_telefono'] ?? '');
         $metodo = $this->sanitizePago($_POST['metodo_pago'] ?? 'transferencia');
         $usuario = AuthHelper::user();
+        $userDepto = $usuario['departamento'] ?? '';
 
         if ($viajeId === 0 || empty($doc) || empty($nombre)) {
             SessionHelper::setFlash('danger', 'Por favor complete todos los datos del pasajero.');
             $this->redirect('/cliente/comprar?viaje_id=' . $viajeId);
+        }
+
+        if (!empty($userDepto)) {
+            $viaje = $this->viajeModel->findWithDetails($viajeId);
+            if ($viaje && ($viaje['origen_depto'] ?? '') !== $userDepto && ($viaje['destino_depto'] ?? '') !== $userDepto) {
+                SessionHelper::setFlash('danger', "No puede comprar pasajes para rutas fuera de su departamento ({$userDepto}).");
+                $this->redirect('/portal');
+            }
         }
 
         try {
@@ -134,13 +200,21 @@ class ClienteController extends Controller {
     }
 
     public function encomiendaCrear(): void {
-        $viajesDisponibles = $this->viajeModel->getViajesDisponibles();
         $usuario = AuthHelper::user();
+        $userDepto = $usuario['departamento'] ?? '';
+
+        $filtros = [];
+        if (!empty($userDepto)) {
+            $filtros['departamento'] = $userDepto;
+        }
+
+        $viajesDisponibles = $this->viajeModel->getViajesDisponibles($filtros);
 
         $this->render('cliente/encomienda_crear', [
             'pageTitle'         => 'Enviar Encomienda Fluvial - ' . APP_NAME,
             'viajesDisponibles' => $viajesDisponibles,
-            'usuario'           => $usuario
+            'usuario'           => $usuario,
+            'userDepto'         => $userDepto
         ]);
     }
 
@@ -163,6 +237,15 @@ class ClienteController extends Controller {
         if ($viajeId === 0 || empty($remitente) || empty($destinatario) || $peso <= 0) {
             SessionHelper::setFlash('danger', 'Por favor complete todos los datos requeridos para el envío.');
             $this->redirect('/cliente/enviar-encomienda');
+        }
+
+        $userDepto = $usuario['departamento'] ?? '';
+        if (!empty($userDepto)) {
+            $viaje = $this->viajeModel->findWithDetails($viajeId);
+            if ($viaje && ($viaje['origen_depto'] ?? '') !== $userDepto && ($viaje['destino_depto'] ?? '') !== $userDepto) {
+                SessionHelper::setFlash('danger', "No puede enviar encomiendas en viajes fuera de su departamento registrado ({$userDepto}).");
+                $this->redirect('/cliente/enviar-encomienda');
+            }
         }
 
         try {
@@ -197,4 +280,39 @@ class ClienteController extends Controller {
             'encomiendas' => $encomiendas
         ]);
     }
+
+    public function facturaBoleto(): void {
+        $boletoId = (int)($_GET['id'] ?? 0);
+        $usuario = AuthHelper::user();
+
+        $boleto = $this->boletoModel->findWithDetails($boletoId);
+
+        if (!$boleto || ((int)($boleto['usuario_id'] ?? 0) !== (int)$usuario['id'] && !AuthHelper::isStaff())) {
+            SessionHelper::setFlash('danger', 'No tiene permisos para ver o descargar esta factura digital.');
+            $this->redirect('/cliente/mis-boletos');
+        }
+
+        $this->renderSingle('cliente/factura_boleto', [
+            'pageTitle' => 'Factura Digital de Pasaje Fluvial - ' . $boleto['codigo_boleto'],
+            'boleto'    => $boleto
+        ]);
+    }
+
+    public function facturaEncomienda(): void {
+        $cargaId = (int)($_GET['id'] ?? 0);
+        $usuario = AuthHelper::user();
+
+        $carga = $this->cargaModel->findWithDetails($cargaId);
+
+        if (!$carga || ((int)($carga['usuario_id'] ?? 0) !== (int)$usuario['id'] && !AuthHelper::isStaff())) {
+            SessionHelper::setFlash('danger', 'No tiene permisos para ver o descargar esta factura de encomienda.');
+            $this->redirect('/cliente/mis-encomiendas');
+        }
+
+        $this->renderSingle('cliente/factura_encomienda', [
+            'pageTitle' => 'Factura Oficial de Flete Fluvial - ' . $carga['guia_numero'],
+            'carga'     => $carga
+        ]);
+    }
 }
+

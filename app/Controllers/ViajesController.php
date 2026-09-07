@@ -31,18 +31,27 @@ class ViajesController extends Controller {
 
     public function index(): void {
         $estado = $_GET['estado'] ?? null;
-        $viajes = $this->viajeModel->allWithDetails($estado);
+        $deptScope = AuthHelper::getDepartmentFilter();
+        $viajes = $this->viajeModel->allWithDetails($estado, $deptScope);
 
         $this->render('viajes/index', [
             'pageTitle'    => 'Programación de Viajes y Zarpes - ' . APP_NAME,
             'viajes'       => $viajes,
-            'estadoFiltro' => $estado
+            'estadoFiltro' => $estado,
+            'deptScope'    => $deptScope
         ]);
     }
 
     public function create(): void {
         AuthHelper::requireRoles(['admin', 'operador']);
-        $rutas = $this->rutaModel->getActivas();
+        $deptScope = AuthHelper::getDepartmentFilter();
+
+        if (!empty($deptScope)) {
+            $rutas = $this->rutaModel->allWithMuellesAndFilters(['departamento' => $deptScope]);
+        } else {
+            $rutas = $this->rutaModel->getActivas();
+        }
+
         $embarcaciones = $this->embarcacionModel->getOperativas();
         $capitanes = $this->usuarioModel->getCapitanes();
 
@@ -50,7 +59,8 @@ class ViajesController extends Controller {
             'pageTitle'     => 'Programar Nuevo Itinerario de Viaje - ' . APP_NAME,
             'rutas'         => $rutas,
             'embarcaciones' => $embarcaciones,
-            'capitanes'     => $capitanes
+            'capitanes'     => $capitanes,
+            'deptScope'     => $deptScope
         ]);
     }
 
@@ -71,6 +81,18 @@ class ViajesController extends Controller {
         if ($rutaId === 0 || $embarcacionId === 0 || empty($fechaSalida) || empty($horaSalida)) {
             SessionHelper::setFlash('danger', 'Por favor complete todos los campos obligatorios.');
             $this->redirect('/viajes/crear');
+        }
+
+        $deptScope = AuthHelper::getDepartmentFilter();
+        if (!empty($deptScope)) {
+            $ruta = $this->rutaModel->find($rutaId);
+            if ($ruta) {
+                $mOrigen = $this->muelleModel->find((int)$ruta['muelle_origen_id']);
+                if ($mOrigen && ($mOrigen['departamento'] ?? '') !== $deptScope) {
+                    SessionHelper::setFlash('danger', "No tiene permisos para programar viajes fuera de su departamento ({$deptScope}).");
+                    $this->redirect('/viajes/crear');
+                }
+            }
         }
 
         try {
@@ -101,6 +123,15 @@ class ViajesController extends Controller {
         $viajeId = (int)($_POST['viaje_id'] ?? 0);
         $nuevoEstado = $_POST['estado'] ?? '';
 
+        $deptScope = AuthHelper::getDepartmentFilter();
+        if (!empty($deptScope)) {
+            $viaje = $this->viajeModel->findWithDetails($viajeId);
+            if ($viaje && ($viaje['origen_depto'] ?? '') !== $deptScope && ($viaje['destino_depto'] ?? '') !== $deptScope) {
+                SessionHelper::setFlash('danger', 'No tiene permisos para modificar viajes de otro departamento.');
+                $this->redirect('/viajes');
+            }
+        }
+
         $estadosValidos = ['programado', 'en_embarque', 'en_navegacion', 'arribado', 'cancelado'];
         if ($viajeId > 0 && in_array($nuevoEstado, $estadosValidos)) {
             $this->viajeModel->updateEstado($viajeId, $nuevoEstado);
@@ -119,6 +150,15 @@ class ViajesController extends Controller {
         $viajeId = (int)($_POST['viaje_id'] ?? 0);
         $precio = (float)($_POST['precio_pasaje'] ?? 0);
 
+        $deptScope = AuthHelper::getDepartmentFilter();
+        if (!empty($deptScope)) {
+            $viaje = $this->viajeModel->findWithDetails($viajeId);
+            if ($viaje && ($viaje['origen_depto'] ?? '') !== $deptScope && ($viaje['destino_depto'] ?? '') !== $deptScope) {
+                SessionHelper::setFlash('danger', 'No tiene permisos para modificar precios de viajes de otro departamento.');
+                $this->redirect('/viajes');
+            }
+        }
+
         if ($viajeId > 0 && $precio > 0) {
             $this->viajeModel->updatePrecio($viajeId, $precio);
             SessionHelper::setFlash('success', 'Precio del pasaje actualizado a $' . number_format($precio, 0, ',', '.') . ' COP.');
@@ -135,6 +175,12 @@ class ViajesController extends Controller {
 
         if (!$viaje) {
             SessionHelper::setFlash('danger', 'El viaje solicitado no existe.');
+            $this->redirect('/viajes');
+        }
+
+        $deptScope = AuthHelper::getDepartmentFilter();
+        if (!empty($deptScope) && ($viaje['origen_depto'] ?? '') !== $deptScope && ($viaje['destino_depto'] ?? '') !== $deptScope) {
+            SessionHelper::setFlash('danger', 'No tiene permisos para consultar manifiestos de otros departamentos.');
             $this->redirect('/viajes');
         }
 

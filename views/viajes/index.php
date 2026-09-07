@@ -3,7 +3,12 @@
         <h4 class="fw-bold text-dark mb-1">Itinerarios de Viajes y Zarpes</h4>
         <p class="text-muted small mb-0">Control de salidas, embarque, manifiestos y estados de navegación</p>
     </div>
-    <div class="d-flex gap-2">
+    <div class="d-flex align-items-center gap-2">
+        <?php if (!empty($deptScope)): ?>
+            <span class="badge bg-warning text-dark py-2 px-3"><i class="fa-solid fa-location-dot me-1"></i>Jurisdicción: <?= htmlspecialchars($deptScope) ?></span>
+        <?php else: ?>
+            <span class="badge bg-primary py-2 px-3"><i class="fa-solid fa-earth-americas me-1"></i>Cobertura Nacional</span>
+        <?php endif; ?>
         <a href="<?= BASE_URL ?>/viajes/crear" class="btn btn-primary fw-semibold">
             <i class="fa-solid fa-calendar-plus me-2"></i>Programar Itinerario
         </a>

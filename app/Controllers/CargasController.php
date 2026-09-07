@@ -18,19 +18,23 @@ class CargasController extends Controller {
     }
 
     public function index(): void {
-        $cargas = $this->cargaModel->allWithDetails();
+        $deptScope = AuthHelper::getDepartmentFilter();
+        $cargas = $this->cargaModel->allWithDetails($deptScope);
         $this->render('cargas/index', [
             'pageTitle' => 'Control de Carga y Encomiendas - ' . APP_NAME,
-            'cargas'    => $cargas
+            'cargas'    => $cargas,
+            'deptScope' => $deptScope
         ]);
     }
 
     public function create(): void {
-        $viajesDisponibles = $this->viajeModel->allWithDetails('programado');
+        $deptScope = AuthHelper::getDepartmentFilter();
+        $viajesDisponibles = $this->viajeModel->allWithDetails('programado', $deptScope);
 
         $this->render('cargas/create', [
             'pageTitle'         => 'Registrar Guía de Carga / Encomienda - ' . APP_NAME,
-            'viajesDisponibles' => $viajesDisponibles
+            'viajesDisponibles' => $viajesDisponibles,
+            'deptScope'         => $deptScope
         ]);
     }
 
@@ -53,6 +57,15 @@ class CargasController extends Controller {
         if ($viajeId === 0 || empty($remitente) || empty($destinatario) || $peso <= 0) {
             SessionHelper::setFlash('danger', 'Complete los datos obligatorios de la encomienda y peso.');
             $this->redirect('/cargas/crear');
+        }
+
+        $deptScope = AuthHelper::getDepartmentFilter();
+        if (!empty($deptScope)) {
+            $viaje = $this->viajeModel->findWithDetails($viajeId);
+            if ($viaje && ($viaje['origen_depto'] ?? '') !== $deptScope && ($viaje['destino_depto'] ?? '') !== $deptScope) {
+                SessionHelper::setFlash('danger', "No tiene permisos para despachar encomiendas en viajes fuera de su departamento ({$deptScope}).");
+                $this->redirect('/cargas/crear');
+            }
         }
 
         try {
@@ -94,4 +107,20 @@ class CargasController extends Controller {
 
         $this->redirect('/cargas');
     }
+
+    public function factura(): void {
+        $id = (int)($_GET['id'] ?? 0);
+        $carga = $this->cargaModel->findWithDetails($id);
+
+        if (!$carga) {
+            SessionHelper::setFlash('danger', 'La guía de carga no fue encontrada.');
+            $this->redirect('/cargas');
+        }
+
+        $this->renderSingle('cliente/factura_encomienda', [
+            'pageTitle' => 'Factura Oficial de Flete Fluvial - ' . $carga['guia_numero'],
+            'carga'     => $carga
+        ]);
+    }
 }
+

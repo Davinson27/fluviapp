@@ -8,11 +8,12 @@ require_once __DIR__ . '/Model.php';
 class Carga extends Model {
     protected string $table = 'cargas_encomiendas';
 
-    public function allWithDetails(): array {
+    public function allWithDetails(?string $departamentoFilter = null): array {
         $sql = "
             SELECT c.*,
                    v.codigo_viaje, v.fecha_salida, v.hora_salida,
-                   mo.nombre AS origen_nombre, md.nombre AS destino_nombre,
+                   mo.nombre AS origen_nombre, mo.departamento AS origen_depto,
+                   md.nombre AS destino_nombre, md.departamento AS destino_depto,
                    e.nombre AS embarcacion_nombre,
                    u.nombre AS registrado_por_nombre
             FROM `{$this->table}` c
@@ -22,8 +23,18 @@ class Carga extends Model {
             JOIN muelles md ON r.muelle_destino_id = md.id
             JOIN embarcaciones e ON v.embarcacion_id = e.id
             LEFT JOIN usuarios u ON c.registrado_por_id = u.id
-            ORDER BY c.id DESC
         ";
+        if (!empty($departamentoFilter)) {
+            $sql .= " WHERE (mo.departamento = :depto1 OR md.departamento = :depto2) ";
+            $sql .= " ORDER BY c.id DESC";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'depto1' => $departamentoFilter,
+                'depto2' => $departamentoFilter
+            ]);
+            return $stmt->fetchAll();
+        }
+        $sql .= " ORDER BY c.id DESC";
         return $this->db->query($sql)->fetchAll();
     }
 
@@ -60,6 +71,31 @@ class Carga extends Model {
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['viaje_id' => $viajeId]);
         return $stmt->fetchAll();
+    }
+
+    public function findByGuia(string $guiaNumero): ?array {
+        $sql = "
+            SELECT c.*,
+                   v.codigo_viaje, v.fecha_salida, v.hora_salida, v.estado AS viaje_estado,
+                   r.distancia_km, r.duracion_estimada_min,
+                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio,
+                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio,
+                   e.nombre AS embarcacion_nombre, e.matricula AS embarcacion_matricula,
+                   u.nombre AS registrado_por_nombre
+            FROM `{$this->table}` c
+            JOIN viajes v ON c.viaje_id = v.id
+            JOIN rutas r ON v.ruta_id = r.id
+            JOIN muelles mo ON r.muelle_origen_id = mo.id
+            JOIN muelles md ON r.muelle_destino_id = md.id
+            JOIN embarcaciones e ON v.embarcacion_id = e.id
+            LEFT JOIN usuarios u ON c.registrado_por_id = u.id
+            WHERE c.guia_numero = :guia_numero
+            LIMIT 1
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['guia_numero' => trim($guiaNumero)]);
+        $res = $stmt->fetch();
+        return $res ?: null;
     }
 
     public function getByUsuario(int $usuarioId): array {

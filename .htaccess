@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /fluviapp/
+    RewriteBase /fluviapp/fluviapp/
 
     # No reescribir si el archivo o directorio existe físicamente
     RewriteCond %{REQUEST_FILENAME} !-f

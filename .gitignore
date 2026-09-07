@@ -20,3 +20,6 @@ Thumbs.db
 
 # XAMPP / PHP
 *.cache
+cookies.txt
+cookie_*.txt
+/scratch/

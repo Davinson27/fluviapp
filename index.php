@@ -27,8 +27,30 @@ $path = '/' . trim($path, '/');
 
 // Enrutamiento
 switch ($path) {
-    // Auth
+    // Landing Page Pública (Servicios, Búsqueda, Flota y Tracking)
     case '/':
+    case '/landing':
+        require_once __DIR__ . '/app/Controllers/LandingController.php';
+        (new LandingController())->index();
+        break;
+
+    // APIs Públicas JSON para Mapa y Filtros Dinámicos
+    case '/api/muelles':
+        require_once __DIR__ . '/app/Controllers/LandingController.php';
+        (new LandingController())->apiMuelles();
+        break;
+
+    case '/api/rutas':
+        require_once __DIR__ . '/app/Controllers/LandingController.php';
+        (new LandingController())->apiRutas();
+        break;
+
+    case '/api/rios':
+        require_once __DIR__ . '/app/Controllers/LandingController.php';
+        (new LandingController())->apiRios();
+        break;
+
+    // Auth
     case '/login':
         require_once __DIR__ . '/app/Controllers/AuthController.php';
         $controller = new AuthController();
@@ -53,6 +75,17 @@ switch ($path) {
         } else {
             $controller->showRegister();
         }
+        break;
+
+    // Perfil de Usuario (tanto Administradores como Clientes / Pasajeros)
+    case '/perfil':
+        require_once __DIR__ . '/app/Controllers/AuthController.php';
+        (new AuthController())->perfil();
+        break;
+
+    case '/perfil/actualizar':
+        require_once __DIR__ . '/app/Controllers/AuthController.php';
+        (new AuthController())->actualizarPerfil();
         break;
 
     // Dashboard
@@ -102,6 +135,16 @@ switch ($path) {
         (new ClienteController())->misEncomiendas();
         break;
 
+    case '/cliente/factura-boleto':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->facturaBoleto();
+        break;
+
+    case '/cliente/factura-encomienda':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->facturaEncomienda();
+        break;
+
     // Embarcaciones
     case '/embarcaciones':
         require_once __DIR__ . '/app/Controllers/EmbarcacionesController.php';
@@ -118,6 +161,16 @@ switch ($path) {
         (new EmbarcacionesController())->store();
         break;
 
+    case '/embarcaciones/editar':
+        require_once __DIR__ . '/app/Controllers/EmbarcacionesController.php';
+        (new EmbarcacionesController())->edit();
+        break;
+
+    case '/embarcaciones/actualizar':
+        require_once __DIR__ . '/app/Controllers/EmbarcacionesController.php';
+        (new EmbarcacionesController())->update();
+        break;
+
     case '/embarcaciones/eliminar':
         require_once __DIR__ . '/app/Controllers/EmbarcacionesController.php';
         (new EmbarcacionesController())->delete();
@@ -132,6 +185,16 @@ switch ($path) {
     case '/muelles/guardar':
         require_once __DIR__ . '/app/Controllers/MuellesController.php';
         (new MuellesController())->store();
+        break;
+
+    case '/muelles/editar':
+        require_once __DIR__ . '/app/Controllers/MuellesController.php';
+        (new MuellesController())->edit();
+        break;
+
+    case '/muelles/actualizar':
+        require_once __DIR__ . '/app/Controllers/MuellesController.php';
+        (new MuellesController())->update();
         break;
 
     case '/muelles/eliminar':
@@ -212,10 +275,20 @@ switch ($path) {
         (new BoletosController())->ticket();
         break;
 
+    case '/boletos/factura':
+        require_once __DIR__ . '/app/Controllers/BoletosController.php';
+        (new BoletosController())->factura();
+        break;
+
     // Cargas / Encomiendas
     case '/cargas':
         require_once __DIR__ . '/app/Controllers/CargasController.php';
         (new CargasController())->index();
+        break;
+
+    case '/cargas/factura':
+        require_once __DIR__ . '/app/Controllers/CargasController.php';
+        (new CargasController())->factura();
         break;
 
     case '/cargas/crear':

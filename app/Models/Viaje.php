@@ -8,12 +8,12 @@ require_once __DIR__ . '/Model.php';
 class Viaje extends Model {
     protected string $table = 'viajes';
 
-    public function allWithDetails(string $estadoFilter = null): array {
+    public function allWithDetails(?string $estadoFilter = null, ?string $departamentoFilter = null): array {
         $sql = "
             SELECT v.*,
                    r.distancia_km, r.duracion_estimada_min,
-                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio,
-                   md.nombre AS destino_nombre, md.municipio AS destino_municipio,
+                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.departamento AS origen_depto,
+                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.departamento AS destino_depto,
                    e.nombre AS embarcacion_nombre, e.matricula AS embarcacion_matricula,
                    e.capacidad_pasajeros AS embarcacion_cap_pasajeros,
                    e.capacidad_carga_kg AS embarcacion_cap_carga,
@@ -26,15 +26,23 @@ class Viaje extends Model {
             JOIN muelles md ON r.muelle_destino_id = md.id
             JOIN embarcaciones e ON v.embarcacion_id = e.id
             LEFT JOIN usuarios u ON v.capitan_id = u.id
+            WHERE 1=1
         ";
-        if ($estadoFilter) {
-            $sql .= " WHERE v.estado = :estado ";
+        $params = [];
+        if (!empty($estadoFilter)) {
+            $sql .= " AND v.estado = :estado ";
+            $params['estado'] = $estadoFilter;
+        }
+        if (!empty($departamentoFilter)) {
+            $sql .= " AND (mo.departamento = :depto1 OR md.departamento = :depto2) ";
+            $params['depto1'] = $departamentoFilter;
+            $params['depto2'] = $departamentoFilter;
         }
         $sql .= " ORDER BY v.fecha_salida DESC, v.hora_salida DESC";
 
-        if ($estadoFilter) {
+        if (!empty($params)) {
             $stmt = $this->db->prepare($sql);
-            $stmt->execute(['estado' => $estadoFilter]);
+            $stmt->execute($params);
             return $stmt->fetchAll();
         }
         return $this->db->query($sql)->fetchAll();
@@ -141,8 +149,8 @@ class Viaje extends Model {
         $sql = "
             SELECT v.*,
                    r.distancia_km, r.duracion_estimada_min,
-                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio,
-                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio,
+                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio, mo.departamento AS origen_departamento,
+                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio, md.departamento AS destino_departamento,
                    e.nombre AS embarcacion_nombre, e.matricula AS embarcacion_matricula, e.tipo AS embarcacion_tipo,
                    u.nombre AS capitan_nombre
             FROM `{$this->table}` v
@@ -154,6 +162,12 @@ class Viaje extends Model {
             WHERE v.estado IN ('programado', 'en_embarque') AND v.cupos_disponibles > 0
         ";
         $params = [];
+
+        if (!empty($filtros['departamento'])) {
+            $sql .= " AND (mo.departamento = :depto_orig OR md.departamento = :depto_dest) ";
+            $params['depto_orig'] = $filtros['departamento'];
+            $params['depto_dest'] = $filtros['departamento'];
+        }
 
         if (!empty($filtros['origen_id'])) {
             $sql .= " AND r.muelle_origen_id = :origen_id ";
@@ -171,6 +185,53 @@ class Viaje extends Model {
         }
 
         $sql .= " ORDER BY v.fecha_salida ASC, v.hora_salida ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Busca fechas alternativas donde una ruta específica (o entre muelles) tenga viajes disponibles
+     */
+    public function getFechasAlternativasConViajes(int $origenId = 0, int $destinoId = 0, string $fechaExcluida = '', string $departamento = ''): array {
+        $sql = "
+            SELECT v.id AS viaje_id, v.codigo_viaje, v.fecha_salida, v.hora_salida, v.precio_pasaje, v.cupos_disponibles,
+                   r.distancia_km, r.duracion_estimada_min,
+                   mo.id AS origen_id, mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.departamento AS origen_departamento,
+                   md.id AS destino_id, md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.departamento AS destino_departamento,
+                   e.nombre AS embarcacion_nombre
+            FROM `{$this->table}` v
+            JOIN rutas r ON v.ruta_id = r.id
+            JOIN muelles mo ON r.muelle_origen_id = mo.id
+            JOIN muelles md ON r.muelle_destino_id = md.id
+            JOIN embarcaciones e ON v.embarcacion_id = e.id
+            WHERE v.estado IN ('programado', 'en_embarque') AND v.cupos_disponibles > 0
+        ";
+        $params = [];
+
+        if (!empty($departamento)) {
+            $sql .= " AND (mo.departamento = :depto_orig OR md.departamento = :depto_dest) ";
+            $params['depto_orig'] = $departamento;
+            $params['depto_dest'] = $departamento;
+        }
+
+        if ($origenId > 0) {
+            $sql .= " AND r.muelle_origen_id = :origen_id ";
+            $params['origen_id'] = $origenId;
+        }
+
+        if ($destinoId > 0) {
+            $sql .= " AND r.muelle_destino_id = :destino_id ";
+            $params['destino_id'] = $destinoId;
+        }
+
+        if (!empty($fechaExcluida)) {
+            $sql .= " AND v.fecha_salida != :fecha_excluida ";
+            $params['fecha_excluida'] = $fechaExcluida;
+        }
+
+        $sql .= " ORDER BY v.fecha_salida ASC, v.hora_salida ASC LIMIT 10";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);

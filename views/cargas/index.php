@@ -3,9 +3,14 @@
         <h4 class="fw-bold text-dark mb-1">Control de Carga y Encomiendas Fluviales</h4>
         <p class="text-muted small mb-0">Gestión de paquetes, peso en bodega, fletes y trazabilidad</p>
     </div>
-    <a href="<?= BASE_URL ?>/cargas/crear" class="btn btn-primary fw-semibold">
-        <i class="fa-solid fa-plus me-2"></i>Registrar Nueva Encomienda
-    </a>
+    <div class="d-flex align-items-center gap-2">
+        <?php if (!empty($deptScope)): ?>
+            <span class="badge bg-warning text-dark py-2 px-3"><i class="fa-solid fa-location-dot me-1"></i>Jurisdicción: <?= htmlspecialchars($deptScope) ?></span>
+        <?php endif; ?>
+        <a href="<?= BASE_URL ?>/cargas/crear" class="btn btn-primary fw-semibold">
+            <i class="fa-solid fa-plus me-2"></i>Registrar Nueva Encomienda
+        </a>
+    </div>
 </div>
 
 <div class="card bg-white shadow-sm">
@@ -21,11 +26,12 @@
                         <th>Peso</th>
                         <th>Flete</th>
                         <th>Estado</th>
+                        <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($cargas)): ?>
-                        <tr><td colspan="7" class="text-center py-4 text-muted">No se registran encomiendas activas</td></tr>
+                        <tr><td colspan="8" class="text-center py-4 text-muted">No se registran encomiendas activas</td></tr>
                     <?php else: ?>
                         <?php foreach ($cargas as $c): ?>
                             <tr>
@@ -57,6 +63,11 @@
                                             <option value="cancelada" <?= $c['estado'] === 'cancelada' ? 'selected' : '' ?>>Cancelada</option>
                                         </select>
                                     </form>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <a href="<?= BASE_URL ?>/cargas/factura?id=<?= $c['id'] ?>" target="_blank" class="btn btn-outline-success btn-sm" title="Ver / Descargar Factura de Flete (PDF)">
+                                        <i class="fa-solid fa-file-invoice-dollar me-1"></i>Factura
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

@@ -70,11 +70,14 @@
                                     ?>
                                     <span class="badge <?= $badgeClass ?> text-uppercase"><?= str_replace('_', ' ', $vEstado) ?></span>
                                 </td>
-                                <td class="text-end">
-                                    <a href="<?= BASE_URL ?>/cliente/ver-ruta?id=<?= $b['id'] ?>" class="btn btn-outline-primary btn-sm me-1" title="Ver Mi Ruta y Detalles">
-                                        <i class="fa-solid fa-map-location-dot me-1"></i>Ver Ruta
+                                <td class="text-end text-nowrap">
+                                    <a href="<?= BASE_URL ?>/cliente/factura-boleto?id=<?= $b['id'] ?>" target="_blank" class="btn btn-primary btn-sm me-1 fw-semibold" title="Descargar Factura Digital en PDF">
+                                        <i class="fa-solid fa-file-invoice-dollar me-1"></i>Factura PDF
                                     </a>
-                                    <a href="<?= BASE_URL ?>/boletos/ticket?id=<?= $b['id'] ?>" target="_blank" class="btn btn-outline-dark btn-sm" title="Imprimir Tiquete">
+                                    <a href="<?= BASE_URL ?>/cliente/ver-ruta?id=<?= $b['id'] ?>" class="btn btn-outline-primary btn-sm me-1" title="Ver Mi Ruta y Detalles">
+                                        <i class="fa-solid fa-map-location-dot me-1"></i>Ruta
+                                    </a>
+                                    <a href="<?= BASE_URL ?>/boletos/ticket?id=<?= $b['id'] ?>" target="_blank" class="btn btn-outline-dark btn-sm" title="Imprimir Tiquete Térmico">
                                         <i class="fa-solid fa-print"></i>
                                     </a>
                                 </td>

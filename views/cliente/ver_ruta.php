@@ -9,8 +9,11 @@
         <a href="<?= BASE_URL ?>/cliente/mis-boletos" class="btn btn-outline-secondary btn-sm">
             <i class="fa-solid fa-arrow-left me-1"></i>Mis Tiquetes
         </a>
-        <a href="<?= BASE_URL ?>/boletos/ticket?id=<?= $boleto['id'] ?>" target="_blank" class="btn btn-success btn-sm fw-semibold">
-            <i class="fa-solid fa-print me-1"></i>Imprimir Tiquete Térmico
+        <a href="<?= BASE_URL ?>/cliente/factura-boleto?id=<?= $boleto['id'] ?>" target="_blank" class="btn btn-primary btn-sm fw-bold">
+            <i class="fa-solid fa-file-invoice-dollar me-1"></i>Descargar Factura Digital (PDF)
+        </a>
+        <a href="<?= BASE_URL ?>/boletos/ticket?id=<?= $boleto['id'] ?>" target="_blank" class="btn btn-outline-success btn-sm fw-semibold">
+            <i class="fa-solid fa-print me-1"></i>Tiquete Térmico
         </a>
     </div>
 </div>

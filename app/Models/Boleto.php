@@ -8,11 +8,12 @@ require_once __DIR__ . '/Model.php';
 class Boleto extends Model {
     protected string $table = 'boletos';
 
-    public function allWithViaje(): array {
+    public function allWithViaje(?string $departamentoFilter = null): array {
         $sql = "
             SELECT b.*,
                    v.codigo_viaje, v.fecha_salida, v.hora_salida,
-                   mo.nombre AS origen_nombre, md.nombre AS destino_nombre,
+                   mo.nombre AS origen_nombre, mo.departamento AS origen_depto,
+                   md.nombre AS destino_nombre, md.departamento AS destino_depto,
                    e.nombre AS embarcacion_nombre,
                    u.nombre AS vendedor_nombre
             FROM `{$this->table}` b
@@ -22,8 +23,18 @@ class Boleto extends Model {
             JOIN muelles md ON r.muelle_destino_id = md.id
             JOIN embarcaciones e ON v.embarcacion_id = e.id
             LEFT JOIN usuarios u ON b.vendido_por_id = u.id
-            ORDER BY b.id DESC
         ";
+        if (!empty($departamentoFilter)) {
+            $sql .= " WHERE (mo.departamento = :depto1 OR md.departamento = :depto2) ";
+            $sql .= " ORDER BY b.id DESC";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                'depto1' => $departamentoFilter,
+                'depto2' => $departamentoFilter
+            ]);
+            return $stmt->fetchAll();
+        }
+        $sql .= " ORDER BY b.id DESC";
         return $this->db->query($sql)->fetchAll();
     }
 

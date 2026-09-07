@@ -48,6 +48,11 @@
                                     <span class="badge <?= $estadoBadge ?> text-uppercase"><?= str_replace('_', ' ', $e['estado']) ?></span>
                                 </td>
                                 <td class="text-end">
+                                    <?php if (in_array(AuthHelper::user()['rol'], ['admin', 'operador'])): ?>
+                                    <a href="<?= BASE_URL ?>/embarcaciones/editar?id=<?= $e['id'] ?>" class="btn btn-outline-primary btn-sm me-1" title="Editar Embarcación">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </a>
+                                    <?php endif; ?>
                                     <?php if (AuthHelper::user()['rol'] === 'admin'): ?>
                                     <form action="<?= BASE_URL ?>/embarcaciones/eliminar" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro de eliminar esta embarcación?');">
                                         <input type="hidden" name="id" value="<?= $e['id'] ?>">

@@ -3,9 +3,14 @@
         <h4 class="fw-bold text-dark mb-1">Control de Pasajes y Boletería</h4>
         <p class="text-muted small mb-0">Emisión y registro de tiquetes para pasajeros fluviales</p>
     </div>
-    <a href="<?= BASE_URL ?>/boletos/crear" class="btn btn-success fw-semibold">
-        <i class="fa-solid fa-plus me-2"></i>Emitir Nuevo Boleto
-    </a>
+    <div class="d-flex align-items-center gap-2">
+        <?php if (!empty($deptScope)): ?>
+            <span class="badge bg-warning text-dark py-2 px-3"><i class="fa-solid fa-location-dot me-1"></i>Jurisdicción: <?= htmlspecialchars($deptScope) ?></span>
+        <?php endif; ?>
+        <a href="<?= BASE_URL ?>/boletos/crear" class="btn btn-success fw-semibold">
+            <i class="fa-solid fa-plus me-2"></i>Emitir Nuevo Boleto
+        </a>
+    </div>
 </div>
 
 <div class="card bg-white shadow-sm">
@@ -48,7 +53,10 @@
                                 </td>
                                 <td class="fw-bold text-success">$<?= number_format($b['precio_pagado'], 0, ',', '.') ?></td>
                                 <td><small class="text-muted"><?= htmlspecialchars($b['vendedor_nombre'] ?? 'Sistema') ?></small></td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
+                                    <a href="<?= BASE_URL ?>/boletos/factura?id=<?= $b['id'] ?>" target="_blank" class="btn btn-outline-success btn-sm me-1" title="Ver / Descargar Factura Digital">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i>
+                                    </a>
                                     <a href="<?= BASE_URL ?>/boletos/ticket?id=<?= $b['id'] ?>" target="_blank" class="btn btn-outline-primary btn-sm" title="Imprimir Tiquete Térmico">
                                         <i class="fa-solid fa-print"></i>
                                     </a>

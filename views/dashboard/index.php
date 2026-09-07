@@ -1,3 +1,27 @@
+<?php if (!empty($deptScope)): ?>
+<div class="alert alert-warning border-warning-subtle shadow-sm py-2 px-3 mb-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+        <i class="fa-solid fa-location-dot fs-4 me-3 text-warning"></i>
+        <div>
+            <h6 class="mb-0 fw-bold text-dark">Jurisdicción Departamental: <?= htmlspecialchars($deptScope) ?></h6>
+            <span class="small text-muted">Panel administrativo y operativo exclusivo para el departamento de <?= htmlspecialchars($deptScope) ?>. Solo se visualizan puertos, rutas, viajes y recaudos de este territorio.</span>
+        </div>
+    </div>
+    <span class="badge bg-warning text-dark px-3 py-2 text-uppercase fw-bold"><i class="fa-solid fa-lock me-1"></i>Independiente</span>
+</div>
+<?php else: ?>
+<div class="alert alert-info border-info-subtle shadow-sm py-2 px-3 mb-4 d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center">
+        <i class="fa-solid fa-earth-americas fs-4 me-3 text-primary"></i>
+        <div>
+            <h6 class="mb-0 fw-bold text-dark">Panel de Control Nacional (Colombia)</h6>
+            <span class="small text-muted">Vista global de todas las cuencas fluviales, puertos y departamentos independientes de la República de Colombia.</span>
+        </div>
+    </div>
+    <span class="badge bg-primary px-3 py-2 text-uppercase fw-bold"><i class="fa-solid fa-crown me-1"></i>Superadmin General</span>
+</div>
+<?php endif; ?>
+
 <!-- Estadísticas Generales -->
 <div class="row g-3 mb-4">
     <div class="col-12 col-sm-6 col-xl-3">

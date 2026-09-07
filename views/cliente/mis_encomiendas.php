@@ -21,12 +21,13 @@
                         <th>Peso / Flete</th>
                         <th>Fecha Itinerario</th>
                         <th>Estado Envío</th>
+                        <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($encomiendas)): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-5">
+                            <td colspan="8" class="text-center py-5">
                                 <div class="display-3 text-muted mb-3"><i class="fa-solid fa-boxes-packing"></i></div>
                                 <h6 class="fw-bold text-secondary">No tienes encomiendas registradas aún.</h6>
                                 <p class="text-muted small">Realiza tus envíos fluviales de paquetes y mercancía con nosotros.</p>
@@ -70,6 +71,14 @@
                                     };
                                     ?>
                                     <span class="badge <?= $cBadge ?> text-uppercase"><?= str_replace('_', ' ', $c['estado']) ?></span>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <a href="<?= BASE_URL ?>/cliente/factura-encomienda?id=<?= $c['id'] ?>" target="_blank" class="btn btn-success btn-sm fw-semibold" title="Descargar Factura de Flete en PDF">
+                                        <i class="fa-solid fa-file-invoice-dollar me-1"></i>Factura PDF
+                                    </a>
+                                    <a href="<?= BASE_URL ?>/?guia=<?= urlencode($c['guia_numero']) ?>#rastreo" target="_blank" class="btn btn-outline-primary btn-sm" title="Rastrear Guía en Vivo">
+                                        <i class="fa-solid fa-route"></i>
+                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
