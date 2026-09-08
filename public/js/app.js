@@ -64,6 +64,86 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    // =======================================================
+    // Gestión de Notificaciones (Campanita)
+    // =======================================================
+    const btnMarcarLeidas = document.getElementById('btnMarcarTodasLeidas');
+    if (btnMarcarLeidas) {
+        btnMarcarLeidas.addEventListener('click', function (e) {
+            e.preventDefault();
+            const baseUrl = window.fluviappBaseUrl || '';
+            fetch(baseUrl + '/api/notificaciones/marcar-leidas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success) {
+                    const badge = document.querySelector('.notif-badge');
+                    if (badge) badge.remove();
+
+                    const unreadBadge = document.getElementById('notifUnreadBadge');
+                    if (unreadBadge) {
+                        unreadBadge.textContent = 'Al día';
+                        unreadBadge.className = 'badge bg-white-50 text-white';
+                    }
+
+                    const items = document.querySelectorAll('.notif-list-container .list-group-item');
+                    items.forEach(el => {
+                        el.classList.remove('bg-light', 'fw-semibold');
+                    });
+
+                    btnMarcarLeidas.style.display = 'none';
+                }
+            })
+            .catch(err => console.error('Error al actualizar notificaciones:', err));
+        });
+    }
+
+    // =======================================================
+    // Modal de Soporte para Encomiendas
+    // =======================================================
+    document.addEventListener('click', function (e) {
+        const btnSoporte = e.target.closest('.btn-soporte-trigger');
+        if (btnSoporte) {
+            const cargaId = btnSoporte.getAttribute('data-carga-id') || '';
+            const guia = btnSoporte.getAttribute('data-guia') || 'N/A';
+            const desc = btnSoporte.getAttribute('data-descripcion') || 'N/A';
+            const origen = btnSoporte.getAttribute('data-origen') || '';
+            const destino = btnSoporte.getAttribute('data-destino') || '';
+            const estado = btnSoporte.getAttribute('data-estado') || 'registrada';
+
+            // Actualizar modal
+            const elGuia = document.getElementById('soporteModalGuia');
+            const elEstado = document.getElementById('soporteModalEstado');
+            const elTrayecto = document.getElementById('soporteModalTrayecto');
+            const elContenido = document.getElementById('soporteModalContenido');
+
+            if (elGuia) elGuia.textContent = guia;
+            if (elEstado) {
+                elEstado.textContent = estado.replace('_', ' ');
+                elEstado.className = 'badge text-uppercase ' + (estado === 'entregada' ? 'bg-success' : 'bg-primary');
+            }
+            if (elTrayecto) elTrayecto.textContent = origen + ' → ' + destino;
+            if (elContenido) elContenido.textContent = desc;
+
+            const inputCargaId = document.getElementById('soporteFormCargaId');
+            const inputGuia = document.getElementById('soporteFormGuiaNumero');
+            if (inputCargaId) inputCargaId.value = cargaId;
+            if (inputGuia) inputGuia.value = guia;
+
+            // Enlace de WhatsApp directo prellenado
+            const btnWa = document.getElementById('soporteBtnWhatsapp');
+            if (btnWa) {
+                const waText = encodeURIComponent(`Hola FluviApp Soporte, requiero asistencia con mi encomienda Guía: ${guia} (${origen} -> ${destino}). Estado actual: ${estado}.`);
+                btnWa.href = `https://wa.me/573108901234?text=${waText}`;
+            }
+        }
+    });
+
     // Auto-cerrar alertas después de 6 segundos
     const alerts = document.querySelectorAll('.alert-dismissible');
     alerts.forEach(function (alert) {

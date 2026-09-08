@@ -659,3 +659,42 @@ body {
     }
 }
 
+/* =======================================================
+   Campanita de Notificaciones y Badges
+   ======================================================= */
+.notif-bell-btn {
+    transition: all 0.2s ease-in-out;
+}
+.notif-bell-btn:hover {
+    transform: scale(1.05);
+    background-color: var(--secondary-bg) !important;
+}
+.notif-badge {
+    animation: pulseBadge 2s infinite;
+}
+@keyframes pulseBadge {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.18); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+.notif-list-container::-webkit-scrollbar {
+    width: 5px;
+}
+.notif-list-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 4px;
+}
+[data-bs-theme="dark"] .notif-dropdown-menu {
+    background-color: var(--bg-surface) !important;
+    border: 1px solid var(--border-color) !important;
+}
+[data-bs-theme="dark"] .notif-dropdown-menu .list-group-item {
+    background-color: transparent !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
+[data-bs-theme="dark"] .notif-dropdown-menu .list-group-item:hover {
+    background-color: var(--bg-surface-secondary) !important;
+}
+
+

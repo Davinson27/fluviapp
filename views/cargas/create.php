@@ -22,13 +22,17 @@
 
                     <div class="row g-3">
                         <div class="col-12"><h6 class="fw-bold text-secondary border-bottom pb-2">Datos del Remitente</h6></div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold">Nombre Remitente *</label>
                             <input type="text" name="remitente_nombre" class="form-control" placeholder="Ej: Juan Pérez" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label fw-semibold">Teléfono Remitente *</label>
                             <input type="text" name="remitente_telefono" class="form-control" placeholder="Ej: 3001234567" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Correo Remitente (Opcional)</label>
+                            <input type="email" name="remitente_email" class="form-control" placeholder="cliente@correo.com">
                         </div>
 
                         <div class="col-12 mt-4"><h6 class="fw-bold text-secondary border-bottom pb-2">Datos del Destinatario</h6></div>

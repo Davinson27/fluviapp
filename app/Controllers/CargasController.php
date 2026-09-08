@@ -46,6 +46,7 @@ class CargasController extends Controller {
         $viajeId = (int)($_POST['viaje_id'] ?? 0);
         $remitente = trim($_POST['remitente_nombre'] ?? '');
         $remTel = trim($_POST['remitente_telefono'] ?? '');
+        $remEmail = trim($_POST['remitente_email'] ?? '');
         $destinatario = trim($_POST['destinatario_nombre'] ?? '');
         $destTel = trim($_POST['destinatario_telefono'] ?? '');
         $desc = trim($_POST['descripcion_carga'] ?? '');
@@ -73,6 +74,7 @@ class CargasController extends Controller {
                 'viaje_id'              => $viajeId,
                 'remitente_nombre'      => $remitente,
                 'remitente_telefono'    => $remTel,
+                'remitente_email'       => !empty($remEmail) ? $remEmail : null,
                 'destinatario_nombre'   => $destinatario,
                 'destinatario_telefono' => $destTel,
                 'descripcion_carga'     => $desc,
@@ -102,6 +104,54 @@ class CargasController extends Controller {
         $estadosValidos = ['registrada', 'cargada', 'en_transito', 'entregada', 'cancelada'];
         if ($id > 0 && in_array($estado, $estadosValidos)) {
             $this->cargaModel->updateEstado($id, $estado);
+
+            // Si el nuevo estado es entregada, notificar con campanita y enviar correo
+            if ($estado === 'entregada') {
+                require_once ROOT_PATH . '/app/Models/Notificacion.php';
+                require_once ROOT_PATH . '/app/Helpers/MailHelper.php';
+                require_once ROOT_PATH . '/app/Models/Usuario.php';
+
+                $carga = $this->cargaModel->findWithDetails($id);
+                if ($carga) {
+                    $usuarioModel = new Usuario();
+                    $notifModel = new Notificacion();
+
+                    $usuarioId = !empty($carga['usuario_id']) ? (int)$carga['usuario_id'] : null;
+                    $remitenteEmail = !empty($carga['remitente_email']) ? trim($carga['remitente_email']) : null;
+
+                    // Si no tiene usuario_id directo, intentar localizar por email o teléfono si está registrado
+                    if (!$usuarioId && $remitenteEmail) {
+                        $userFound = $usuarioModel->findByEmail($remitenteEmail);
+                        if ($userFound) {
+                            $usuarioId = (int)$userFound['id'];
+                        }
+                    }
+
+                    // 1. Notificación en el sistema (campanita)
+                    if ($usuarioId) {
+                        $guia = $carga['guia_numero'];
+                        $destino = $carga['destino_nombre'] ?? 'puerto de destino';
+                        $titulo = "¡Tu encomienda fue entregada con éxito!";
+                        $mensaje = "Tu encomienda con Guía {$guia} ha llegado y fue entregada en el {$destino}.";
+                        $enlace = BASE_URL . '/cliente/mis-encomiendas';
+
+                        $notifModel->crear($usuarioId, $titulo, $mensaje, $enlace, 'encomienda_entregada');
+                    }
+
+                    // 2. Notificación por Correo Electrónico
+                    if ($usuarioId && empty($remitenteEmail)) {
+                        $u = $usuarioModel->find($usuarioId);
+                        if ($u && !empty($u['email'])) {
+                            $remitenteEmail = $u['email'];
+                        }
+                    }
+
+                    if ($remitenteEmail) {
+                        MailHelper::enviarEntregaEncomienda($carga, $remitenteEmail);
+                    }
+                }
+            }
+
             SessionHelper::setFlash('success', 'Estado de la encomienda actualizado correctamente.');
         }
 

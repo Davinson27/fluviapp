@@ -135,6 +135,25 @@ switch ($path) {
         (new ClienteController())->misEncomiendas();
         break;
 
+    case '/cliente/reportar-incidencia':
+        require_once __DIR__ . '/app/Controllers/ClienteController.php';
+        (new ClienteController())->reportarIncidencia();
+        break;
+
+    case '/api/notificaciones/marcar-leidas':
+        header('Content-Type: application/json; charset=utf-8');
+        require_once __DIR__ . '/app/Helpers/AuthHelper.php';
+        require_once __DIR__ . '/app/Models/Notificacion.php';
+        $user = AuthHelper::user();
+        if (!$user) {
+            echo json_encode(['success' => false, 'error' => 'No autenticado']);
+            exit;
+        }
+        $notifModel = new Notificacion();
+        $notifModel->marcarTodasLeidas((int)$user['id']);
+        echo json_encode(['success' => true]);
+        exit;
+
     case '/cliente/factura-boleto':
         require_once __DIR__ . '/app/Controllers/ClienteController.php';
         (new ClienteController())->facturaBoleto();

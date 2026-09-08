@@ -1,6 +1,21 @@
 <?php
 $currentUser = AuthHelper::user();
 $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
+
+// Cargar notificaciones para el usuario autenticado
+$unreadNotifCount = 0;
+$userNotifications = [];
+if (!empty($currentUser['id'])) {
+    require_once ROOT_PATH . '/app/Models/Notificacion.php';
+    try {
+        $notifModel = new Notificacion();
+        $unreadNotifCount = $notifModel->countNoLeidas((int)$currentUser['id']);
+        $userNotifications = $notifModel->getByUsuario((int)$currentUser['id'], 6);
+    } catch (Throwable $e) {
+        $unreadNotifCount = 0;
+        $userNotifications = [];
+    }
+}
 ?>
 <!-- Menú Lateral Desplegable (Offcanvas) -->
 <div class="offcanvas offcanvas-start bg-dark text-white sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
@@ -120,6 +135,66 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
         </div>
         
         <div class="ms-auto d-flex align-items-center gap-2">
+            <!-- Campanita de Notificaciones -->
+            <div class="dropdown me-1" id="dropdownNotificacionesContainer" style="position: relative; z-index: 1055;">
+                <button class="btn btn-sm btn-light border position-relative rounded-circle d-flex align-items-center justify-content-center shadow-sm notif-bell-btn" 
+                        type="button" id="notifDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" 
+                        title="Notificaciones de Encomiendas y Avisos" style="width: 38px; height: 38px;">
+                    <i class="fa-solid fa-bell text-secondary fs-6"></i>
+                    <?php if ($unreadNotifCount > 0): ?>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light notif-badge" style="font-size: 0.65rem;">
+                            <?= $unreadNotifCount > 9 ? '9+' : $unreadNotifCount ?>
+                            <span class="visually-hidden">mensajes no leídos</span>
+                        </span>
+                    <?php endif; ?>
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-0 notif-dropdown-menu" aria-labelledby="notifDropdownBtn" style="width: 320px; max-width: 90vw; border-radius: 12px; overflow: hidden;">
+                    <div class="p-3 bg-primary text-white d-flex justify-content-between align-items-center">
+                        <div class="fw-bold fs-6"><i class="fa-solid fa-bell me-2"></i>Notificaciones</div>
+                        <?php if ($unreadNotifCount > 0): ?>
+                            <span class="badge bg-light text-primary fw-bold" id="notifUnreadBadge"><?= $unreadNotifCount ?> nueva(s)</span>
+                        <?php else: ?>
+                            <span class="badge bg-white-50 text-white" style="font-size: 0.7rem;">Al día</span>
+                        <?php endif; ?>
+                    </div>
+                    
+                    <div class="notif-list-container" style="max-height: 350px; overflow-y: auto;">
+                        <?php if (empty($userNotifications)): ?>
+                            <div class="text-center py-4 px-3 text-muted">
+                                <i class="fa-regular fa-bell-slash fs-2 mb-2 d-block text-secondary opacity-50"></i>
+                                <p class="small mb-0">No tienes notificaciones por el momento.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="list-group list-group-flush">
+                                <?php foreach ($userNotifications as $nt): ?>
+                                    <a href="<?= !empty($nt['enlace']) ? htmlspecialchars($nt['enlace']) : '#' ?>" 
+                                       class="list-group-item list-group-item-action py-2 px-3 border-bottom <?= empty($nt['leida']) ? 'bg-light fw-semibold' : '' ?>"
+                                       style="font-size: 0.82rem; transition: background 0.2s;">
+                                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                                            <span class="text-primary fw-bold">
+                                                <i class="fa-solid fa-circle-check text-success me-1"></i><?= htmlspecialchars($nt['titulo']) ?>
+                                            </span>
+                                            <small class="text-muted" style="font-size: 0.68rem;"><?= date('d/m h:i A', strtotime($nt['created_at'])) ?></small>
+                                        </div>
+                                        <p class="mb-1 text-secondary" style="font-size: 0.78rem; line-height: 1.3;">
+                                            <?= htmlspecialchars($nt['mensaje']) ?>
+                                        </p>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if (!empty($userNotifications)): ?>
+                        <div class="p-2 border-top bg-light text-center">
+                            <button type="button" class="btn btn-link btn-sm text-decoration-none fw-semibold p-0 text-primary" id="btnMarcarTodasLeidas">
+                                <i class="fa-solid fa-check-double me-1"></i>Marcar todas como leídas
+                            </button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
             <!-- Botón Modo Oscuro / Claro -->
             <button type="button" class="theme-toggle-btn shadow-sm" title="Alternar Modo Oscuro / Claro" aria-label="Alternar Tema">
                 <i class="fa-solid fa-moon text-info"></i>

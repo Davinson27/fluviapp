@@ -226,6 +226,7 @@ class ClienteController extends Controller {
         $viajeId = (int)($_POST['viaje_id'] ?? 0);
         $remitente = trim($_POST['remitente_nombre'] ?? '');
         $remTel = trim($_POST['remitente_telefono'] ?? '');
+        $remEmail = trim($_POST['remitente_email'] ?? ($usuario['email'] ?? ''));
         $destinatario = trim($_POST['destinatario_nombre'] ?? '');
         $destTel = trim($_POST['destinatario_telefono'] ?? '');
         $desc = trim($_POST['descripcion_carga'] ?? '');
@@ -254,6 +255,7 @@ class ClienteController extends Controller {
                 'usuario_id'            => $usuario['id'],
                 'remitente_nombre'      => $remitente,
                 'remitente_telefono'    => $remTel,
+                'remitente_email'       => !empty($remEmail) ? $remEmail : null,
                 'destinatario_nombre'   => $destinatario,
                 'destinatario_telefono' => $destTel,
                 'descripcion_carga'     => $desc,
@@ -269,6 +271,48 @@ class ClienteController extends Controller {
             SessionHelper::setFlash('danger', $this->userErrorMessage($e, 'Error al procesar la encomienda.'));
             $this->redirect('/cliente/enviar-encomienda');
         }
+    }
+
+    public function reportarIncidencia(): void {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->redirect('/cliente/mis-encomiendas');
+        }
+
+        require_once ROOT_PATH . '/app/Models/Soporte.php';
+        $usuario = AuthHelper::user();
+        $soporteModel = new Soporte();
+
+        $cargaId = (int)($_POST['carga_id'] ?? 0);
+        $guiaNumero = trim($_POST['guia_numero'] ?? '');
+        $contactoNombre = trim($_POST['contacto_nombre'] ?? ($usuario['nombre'] ?? ''));
+        $contactoTelefono = trim($_POST['contacto_telefono'] ?? ($usuario['telefono'] ?? ''));
+        $contactoEmail = trim($_POST['contacto_email'] ?? ($usuario['email'] ?? ''));
+        $asunto = trim($_POST['asunto'] ?? 'Encomienda no entregada / Novedad');
+        $mensaje = trim($_POST['mensaje'] ?? '');
+
+        if (empty($mensaje)) {
+            SessionHelper::setFlash('danger', 'Debe detallar el motivo de su solicitud a soporte.');
+            $this->redirect('/cliente/mis-encomiendas');
+        }
+
+        try {
+            $soporteModel->crearIncidencia([
+                'carga_id'          => $cargaId > 0 ? $cargaId : null,
+                'usuario_id'        => (int)($usuario['id'] ?? 0),
+                'guia_numero'       => $guiaNumero,
+                'contacto_nombre'   => $contactoNombre,
+                'contacto_telefono' => $contactoTelefono,
+                'contacto_email'    => $contactoEmail,
+                'asunto'            => $asunto,
+                'mensaje'           => $mensaje
+            ]);
+
+            SessionHelper::setFlash('success', '¡Tu reporte de soporte fue radicado exitosamente! Un asesor de operaciones fluviales se comunicará contigo.');
+        } catch (Exception $e) {
+            SessionHelper::setFlash('danger', $this->userErrorMessage($e, 'No fue posible registrar la solicitud de soporte.'));
+        }
+
+        $this->redirect('/cliente/mis-encomiendas');
     }
 
     public function misEncomiendas(): void {

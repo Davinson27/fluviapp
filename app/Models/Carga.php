@@ -145,12 +145,12 @@ class Carga extends Model {
 
             $stmt = $this->db->prepare("
                 INSERT INTO `{$this->table}` (
-                    viaje_id, usuario_id, guia_numero, remitente_nombre, remitente_telefono,
+                    viaje_id, usuario_id, guia_numero, remitente_nombre, remitente_telefono, remitente_email,
                     destinatario_nombre, destinatario_telefono, descripcion_carga,
                     peso_kg, valor_declarado, valor_flete, estado, registrado_por_id
                 )
                 VALUES (
-                    :viaje_id, :usuario_id, :guia_numero, :remitente_nombre, :remitente_telefono,
+                    :viaje_id, :usuario_id, :guia_numero, :remitente_nombre, :remitente_telefono, :remitente_email,
                     :destinatario_nombre, :destinatario_telefono, :descripcion_carga,
                     :peso_kg, :valor_declarado, :valor_flete, :estado, :registrado_por_id
                 )
@@ -161,6 +161,7 @@ class Carga extends Model {
                 'guia_numero'           => $guiaNumero,
                 'remitente_nombre'      => trim($data['remitente_nombre']),
                 'remitente_telefono'    => trim($data['remitente_telefono']),
+                'remitente_email'       => !empty($data['remitente_email']) ? trim($data['remitente_email']) : null,
                 'destinatario_nombre'   => trim($data['destinatario_nombre']),
                 'destinatario_telefono' => trim($data['destinatario_telefono']),
                 'descripcion_carga'     => trim($data['descripcion_carga']),
@@ -196,7 +197,11 @@ class Carga extends Model {
             }
 
             $estadoAnterior = $carga['estado'];
-            $upd = $this->db->prepare("UPDATE `{$this->table}` SET estado = :estado WHERE id = :id");
+            if ($estado === 'entregada') {
+                $upd = $this->db->prepare("UPDATE `{$this->table}` SET estado = :estado, entregado_at = CURRENT_TIMESTAMP WHERE id = :id");
+            } else {
+                $upd = $this->db->prepare("UPDATE `{$this->table}` SET estado = :estado WHERE id = :id");
+            }
             $upd->execute(['id' => $id, 'estado' => $estado]);
 
             if ($estadoAnterior !== 'cancelada' && $estado === 'cancelada') {

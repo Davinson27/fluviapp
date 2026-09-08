@@ -16,6 +16,9 @@
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css?v=<?= file_exists(ROOT_PATH . '/public/css/style.css') ? filemtime(ROOT_PATH . '/public/css/style.css') : time() ?>">
     <!-- Theme Manager (Modo Oscuro) -->
     <script src="<?= BASE_URL ?>/public/js/theme.js"></script>
+    <script>
+        window.fluviappBaseUrl = '<?= BASE_URL ?>';
+    </script>
 </head>
 <body>
 <div class="d-flex" id="wrapper">
