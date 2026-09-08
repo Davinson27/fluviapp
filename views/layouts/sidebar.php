@@ -89,7 +89,7 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
 <!-- Page Content Wrapper -->
 <div id="page-content-wrapper" class="w-100">
     <!-- Navbar superior -->
-    <nav class="navbar navbar-expand-lg navbar-app px-4 py-3">
+    <nav class="navbar navbar-expand-lg navbar-app px-4 py-3" style="position: relative; z-index: 1050;">
         <div class="d-flex align-items-center">
             <button class="btn btn-outline-secondary me-3" id="menu-toggle">
                 <i class="fa-solid fa-bars"></i>
@@ -123,7 +123,7 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
                 <i class="fa-solid fa-right-from-bracket me-1"></i>Salir
             </a>
 
-            <div class="dropdown">
+            <div class="dropdown" style="position: relative; z-index: 1055;">
                 <button class="btn p-0 border-0 shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                     <?php if (!empty($currentUser['foto']) && file_exists(ROOT_PATH . '/public/' . ltrim($currentUser['foto'], '/'))): ?>
                         <img src="<?= BASE_URL ?>/public/<?= htmlspecialchars(ltrim($currentUser['foto'], '/')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-2 border-primary" style="width: 38px; height: 38px;">
@@ -133,10 +133,10 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
                         </div>
                     <?php endif; ?>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu">
+                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu" style="position: absolute; z-index: 9999; min-width: 220px;">
                     <li>
-                        <div class="dropdown-header">
-                            <div class="fw-bold text-dark"><?= htmlspecialchars($currentUser['nombre'] ?? 'Usuario') ?></div>
+                        <div class="dropdown-header py-2">
+                            <div class="fw-bold dropdown-user-name" style="font-size: 0.95rem;"><?= htmlspecialchars($currentUser['nombre'] ?? 'Usuario') ?></div>
                             <small class="text-muted"><?= htmlspecialchars($currentUser['email'] ?? '') ?></small>
                         </div>
                     </li>
@@ -158,7 +158,7 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
     </nav>
 
     <!-- Contenedor Principal -->
-    <div class="container-fluid px-4 py-4">
+    <div class="container-fluid px-4 py-4" style="position: relative; z-index: 1;">
         <?php 
         $flash = SessionHelper::getFlash();
         if ($flash): 

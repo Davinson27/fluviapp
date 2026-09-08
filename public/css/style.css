@@ -134,11 +134,18 @@ body {
 
 /* Navbar Superior Interna */
 .navbar-app {
+    position: relative !important;
+    z-index: 1050 !important;
     background-color: var(--nav-bg) !important;
     border-bottom: 1px solid var(--nav-border) !important;
     box-shadow: var(--shadow-soft);
     backdrop-filter: blur(12px);
     transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#page-content-wrapper > .container-fluid {
+    position: relative;
+    z-index: 1;
 }
 
 /* Tarjetas y Widgets Adaptables */
@@ -291,10 +298,29 @@ body {
 
 /* Modales y Dropdowns */
 .dropdown-menu {
-    background-color: var(--bg-surface-elevated) !important;
-    border-color: var(--card-border) !important;
-    box-shadow: var(--shadow-elevated) !important;
+    position: absolute !important;
+    z-index: 9999 !important;
+    background-color: var(--bg-surface-elevated, #ffffff) !important;
+    border: 1px solid var(--card-border, #e2e8f0) !important;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25) !important;
     border-radius: 12px;
+    opacity: 1 !important;
+    backdrop-filter: none !important;
+}
+
+[data-bs-theme="dark"] .dropdown-menu {
+    background-color: #101f35 !important;
+    border-color: #1e3556 !important;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65) !important;
+}
+
+.dropdown-user-name {
+    color: var(--text-main) !important;
+}
+
+[data-bs-theme="dark"] .dropdown-menu .dropdown-user-name,
+[data-bs-theme="dark"] .dropdown-menu .text-dark {
+    color: #f1f5f9 !important;
 }
 
 .dropdown-item {
