@@ -3,19 +3,8 @@
 // =======================================================
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Control del Menú Lateral Desplegable (Offcanvas)
-    const menuToggle = document.getElementById('menu-toggle');
-    const sidebarOffcanvas = document.getElementById('sidebarOffcanvas');
-
-    if (menuToggle && sidebarOffcanvas) {
-        menuToggle.addEventListener('click', function (e) {
-            e.preventDefault();
-            if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
-                const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebarOffcanvas);
-                bsOffcanvas.toggle();
-            }
-        });
-    }
+    // Las funciones de apertura y cierre del menú lateral son gestionadas
+    // automáticamente por el atributo data-bs-toggle="offcanvas" de Bootstrap 5.
 
     // Auto-cerrar alertas después de 6 segundos
     const alerts = document.querySelectorAll('.alert-dismissible');
