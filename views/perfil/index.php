@@ -22,12 +22,19 @@
                         <div class="col-12 col-md-4 text-center mb-3 mb-md-0">
                             <div class="position-relative d-inline-block">
                                 <?php if (!empty($usuario['foto']) && file_exists(ROOT_PATH . '/public/' . ltrim($usuario['foto'], '/'))): ?>
-                                    <img id="preview-avatar" src="<?= BASE_URL ?>/public/<?= htmlspecialchars(ltrim($usuario['foto'], '/')) ?>" alt="Foto de Perfil" class="rounded-circle shadow object-fit-cover border border-3 border-primary" style="width: 140px; height: 140px;">
+                                    <div class="user-avatar-zoom-container cursor-pointer" 
+                                         data-img-zoom="<?= BASE_URL ?>/public/<?= htmlspecialchars(ltrim($usuario['foto'], '/')) ?>" 
+                                         data-img-title="<?= htmlspecialchars($usuario['nombre']) ?> (Foto de Perfil)"
+                                         data-img-caption="Fotografía de perfil de <?= htmlspecialchars($usuario['nombre']) ?> &bull; FluviApp"
+                                         title="Clic para ampliar foto">
+                                        <img id="preview-avatar" src="<?= BASE_URL ?>/public/<?= htmlspecialchars(ltrim($usuario['foto'], '/')) ?>" alt="Foto de Perfil" class="rounded-circle shadow object-fit-cover border border-3 border-primary zoomable-image" style="width: 140px; height: 140px;">
+                                        <span class="avatar-zoom-indicator" style="width: 24px; height: 24px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+                                    </div>
                                 <?php else: ?>
                                     <div id="preview-avatar-placeholder" class="rounded-circle shadow d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary border border-3 border-primary-subtle" style="width: 140px; height: 140px; font-size: 3.5rem;">
                                         <i class="fa-solid fa-user"></i>
                                     </div>
-                                    <img id="preview-avatar" src="#" alt="Vista previa" class="rounded-circle shadow object-fit-cover border border-3 border-primary d-none" style="width: 140px; height: 140px;">
+                                    <img id="preview-avatar" src="#" alt="Vista previa" class="rounded-circle shadow object-fit-cover border border-3 border-primary d-none zoomable-image cursor-pointer" style="width: 140px; height: 140px;">
                                 <?php endif; ?>
                             </div>
                         </div>

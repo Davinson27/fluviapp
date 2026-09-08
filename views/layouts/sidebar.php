@@ -5,8 +5,12 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
 <!-- Menú Lateral Desplegable (Offcanvas) -->
 <div class="offcanvas offcanvas-start bg-dark text-white sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
     <div class="offcanvas-header border-bottom border-secondary py-3 px-4 d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-2">
-            <img src="<?= BASE_URL ?>/public/img/logo.jpg" alt="FluviApp Logo" class="brand-logo-img shadow" style="width: 44px; height: 44px;">
+        <div class="d-flex align-items-center gap-2 cursor-pointer brand-logo-trigger" 
+             data-img-zoom="<?= BASE_URL ?>/public/img/logo.jpg" 
+             data-img-title="Logo Oficial - FluviApp" 
+             data-img-caption="Emblema y marca oficial del transporte fluvial de Colombia"
+             title="Clic para ampliar logo">
+            <img src="<?= BASE_URL ?>/public/img/logo.jpg" alt="FluviApp Logo" class="brand-logo-img shadow zoomable-image" style="width: 44px; height: 44px;">
             <div>
                 <h5 class="offcanvas-title text-white fw-bold m-0" id="sidebarOffcanvasLabel">Fluvi<span class="text-info">App</span></h5>
                 <small class="text-muted" style="font-size: 0.75rem;">Gestión Fluvial</small>
@@ -104,9 +108,13 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
             <button class="btn btn-outline-primary me-2 me-md-3 d-flex align-items-center justify-content-center shadow-sm" id="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" title="Menú de Navegación" style="width: 42px; height: 42px; border-radius: 10px;">
                 <i class="fa-solid fa-bars fs-5"></i>
             </button>
-            <div class="d-flex align-items-center me-2 me-md-3">
-                <img src="<?= BASE_URL ?>/public/img/logo.jpg" alt="FluviApp Logo" class="brand-logo-img me-2" style="width: 38px; height: 38px;">
-                <span class="fw-bold fs-5" style="color: var(--primary-color);">Fluvi<span class="text-info">App</span></span>
+            <div class="d-flex align-items-center me-2 me-md-3 cursor-pointer brand-logo-trigger" 
+                 data-img-zoom="<?= BASE_URL ?>/public/img/logo.jpg" 
+                 data-img-title="Logo Oficial - FluviApp" 
+                 data-img-caption="Emblema y marca oficial del transporte fluvial de Colombia"
+                 title="Clic para ampliar logo">
+                <img src="<?= BASE_URL ?>/public/img/logo.jpg" alt="FluviApp Logo" class="brand-logo-img me-2 zoomable-image" style="width: 38px; height: 38px; cursor: pointer;">
+                <span class="fw-bold fs-5 d-none d-sm-inline" style="color: var(--primary-color);">Fluvi<span class="text-info">App</span></span>
             </div>
             <h5 class="m-0 text-dark fw-bold border-start ps-3 d-none d-md-inline-block"><?= htmlspecialchars($pageTitle ?? APP_NAME) ?></h5>
         </div>
@@ -137,36 +145,67 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
                 <i class="fa-solid fa-right-from-bracket me-1"></i>Salir
             </a>
 
-            <div class="dropdown" style="position: relative; z-index: 1055;">
-                <button class="btn p-0 border-0 shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                    <?php if (!empty($currentUser['foto']) && file_exists(ROOT_PATH . '/public/' . ltrim($currentUser['foto'], '/'))): ?>
-                        <img src="<?= BASE_URL ?>/public/<?= htmlspecialchars(ltrim($currentUser['foto'], '/')) ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-2 border-primary" style="width: 38px; height: 38px;">
+            <?php 
+            $userPhotoUrl = !empty($currentUser['foto']) && file_exists(ROOT_PATH . '/public/' . ltrim($currentUser['foto'], '/')) 
+                ? BASE_URL . '/public/' . htmlspecialchars(ltrim($currentUser['foto'], '/')) 
+                : null;
+            $hasRealPhoto = !empty($userPhotoUrl);
+            ?>
+            <div class="d-flex align-items-center">
+                <!-- Foto de Perfil con Clic para Ampliar -->
+                <div class="user-avatar-zoom-container position-relative cursor-pointer me-1" 
+                     data-img-zoom="<?= $hasRealPhoto ? $userPhotoUrl : BASE_URL . '/public/img/logo.jpg' ?>" 
+                     data-img-title="<?= htmlspecialchars($currentUser['nombre'] ?? 'Usuario') ?> (Foto de Perfil)" 
+                     data-img-caption="Fotografía de <?= htmlspecialchars($currentUser['nombre'] ?? 'Usuario') ?> &bull; <?= htmlspecialchars($currentUser['email'] ?? '') ?>"
+                     title="Clic para ver foto ampliada">
+                    <?php if ($hasRealPhoto): ?>
+                        <img src="<?= $userPhotoUrl ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-2 border-primary shadow-sm zoomable-image" style="width: 40px; height: 40px; cursor: pointer;">
                     <?php else: ?>
-                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white" style="width: 38px; height: 38px;">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white shadow-sm zoomable-image" style="width: 40px; height: 40px; cursor: pointer;" title="Clic para ampliar">
                             <i class="fa-solid fa-user"></i>
                         </div>
                     <?php endif; ?>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu" style="position: absolute; z-index: 9999; min-width: 220px;">
-                    <li>
-                        <div class="dropdown-header py-2">
-                            <div class="fw-bold dropdown-user-name" style="font-size: 0.95rem;"><?= htmlspecialchars($currentUser['nombre'] ?? 'Usuario') ?></div>
-                            <small class="text-muted"><?= htmlspecialchars($currentUser['email'] ?? '') ?></small>
-                        </div>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item fw-semibold" href="<?= BASE_URL ?>/perfil">
-                            <i class="fa-solid fa-id-card me-2 text-primary"></i>Mi Perfil y Foto
-                        </a>
-                    </li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li>
-                        <a class="dropdown-item text-danger fw-semibold" href="<?= BASE_URL ?>/logout">
-                            <i class="fa-solid fa-right-from-bracket me-2"></i>Cerrar Sesión
-                        </a>
-                    </li>
-                </ul>
+                    <span class="avatar-zoom-indicator"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+                </div>
+
+                <!-- Menú desplegable de cuenta -->
+                <div class="dropdown" style="position: relative; z-index: 1055;">
+                    <button class="btn btn-sm p-1 text-muted border-0 dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false" title="Menú de cuenta">
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="userMenu" style="position: absolute; z-index: 9999; min-width: 230px;">
+                        <li>
+                            <div class="dropdown-header py-2 text-center">
+                                <div class="mb-2 d-inline-block position-relative cursor-pointer zoomable-image" 
+                                     data-img-zoom="<?= $hasRealPhoto ? $userPhotoUrl : BASE_URL . '/public/img/logo.jpg' ?>" 
+                                     data-img-title="<?= htmlspecialchars($currentUser['nombre'] ?? 'Usuario') ?>"
+                                     title="Clic para ampliar foto">
+                                    <?php if ($hasRealPhoto): ?>
+                                        <img src="<?= $userPhotoUrl ?>" alt="Avatar" class="rounded-circle object-fit-cover border border-2 border-primary shadow-sm" style="width: 58px; height: 58px;">
+                                    <?php else: ?>
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center bg-primary text-white shadow-sm mx-auto" style="width: 58px; height: 58px;">
+                                            <i class="fa-solid fa-user fs-4"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <span class="position-absolute bottom-0 end-0 badge bg-info rounded-circle p-1" style="font-size: 0.6rem;"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
+                                </div>
+                                <div class="fw-bold dropdown-user-name" style="font-size: 0.95rem;"><?= htmlspecialchars($currentUser['nombre'] ?? 'Usuario') ?></div>
+                                <small class="text-muted"><?= htmlspecialchars($currentUser['email'] ?? '') ?></small>
+                            </div>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item fw-semibold" href="<?= BASE_URL ?>/perfil">
+                                <i class="fa-solid fa-id-card me-2 text-primary"></i>Mi Perfil y Foto
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger fw-semibold" href="<?= BASE_URL ?>/logout">
+                                <i class="fa-solid fa-right-from-bracket me-2"></i>Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </nav>
