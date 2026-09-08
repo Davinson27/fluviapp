@@ -697,4 +697,181 @@ body {
     background-color: var(--bg-surface-secondary) !important;
 }
 
+/* =======================================================
+   RESPONSIVE DESIGN ADAPTIVO COMPLETO
+   Soporte Universal: Smartphones, Tablets, Laptops y Desktops
+   ======================================================= */
+
+/* 1. Ajustes globales de fluidez */
+img, svg, video, canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 0;
+    border-radius: 12px;
+}
+
+/* 2. Pantallas Ultra Pequeñas y Móviles (< 576px) */
+@media (max-width: 575.98px) {
+    /* Navbar Superior */
+    .navbar-app {
+        padding: 0.5rem 0.75rem !important;
+    }
+    .brand-logo-img {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    #menu-toggle {
+        width: 36px !important;
+        height: 36px !important;
+        border-radius: 8px !important;
+    }
+    #menu-toggle i {
+        font-size: 1rem !important;
+    }
+
+    /* Reducir espaciados de contenedores */
+    #page-content-wrapper > .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+        padding-top: 1rem !important;
+        padding-bottom: 1.5rem !important;
+    }
+
+    /* Tarjetas y Contenido */
+    .card {
+        border-radius: 14px !important;
+    }
+    .card-body {
+        padding: 1rem !important;
+    }
+    .card-header {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.95rem;
+    }
+
+    /* KPIs y Stat Cards */
+    .stat-card {
+        padding: 0.85rem !important;
+        border-radius: 14px !important;
+    }
+    .stat-card h3 {
+        font-size: 1.35rem !important;
+    }
+
+    /* Formularios y Botones */
+    .btn {
+        padding: 0.45rem 0.85rem !important;
+        font-size: 0.875rem !important;
+    }
+    .form-control, .form-select {
+        font-size: 0.9rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    /* Notificaciones Dropdown */
+    .notif-dropdown-menu {
+        width: 290px !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+
+    /* Tablas en móviles */
+    .table th, .table td {
+        padding: 0.6rem 0.5rem !important;
+        font-size: 0.78rem !important;
+    }
+
+    /* Modal Visor */
+    #imageViewerModal .modal-dialog {
+        margin: 0.5rem;
+    }
+    #imageViewerModal #imageViewerImg {
+        max-height: 55vh !important;
+    }
+
+    /* Modales de Soporte y Acciones */
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+    .modal-body {
+        padding: 1rem !important;
+    }
+}
+
+/* 3. Tablets y Dispositivos Medianos (576px a 991.98px) */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    #page-content-wrapper > .container-fluid {
+        padding-left: 1.25rem !important;
+        padding-right: 1.25rem !important;
+    }
+
+    .card-body {
+        padding: 1.35rem !important;
+    }
+
+    .stat-card h3 {
+        font-size: 1.55rem !important;
+    }
+
+    .notif-dropdown-menu {
+        width: 320px !important;
+    }
+}
+
+/* 4. Menú Lateral Offcanvas Adaptativo */
+.sidebar-offcanvas {
+    width: 280px !important;
+    max-width: 85vw !important;
+    box-shadow: 0 0 35px rgba(0, 0, 0, 0.45);
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar-offcanvas {
+        width: 270px !important;
+    }
+}
+
+/* 5. Pantallas Grandes y Monitores (> 1200px) */
+@media (min-width: 1200px) {
+    #page-content-wrapper > .container-fluid {
+        max-width: 1440px;
+        margin: 0 auto;
+    }
+}
+
+/* 6. Landing Page Adaptativa */
+@media (max-width: 767.98px) {
+    .landing-hero {
+        padding: 100px 0 70px 0 !important;
+    }
+    .landing-hero h1 {
+        font-size: 1.85rem !important;
+    }
+    .landing-hero p.lead {
+        font-size: 0.95rem !important;
+    }
+    #mapa-colombia {
+        height: 380px !important;
+    }
+    .landing-nav .navbar-brand span {
+        font-size: 1.15rem !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    #mapa-colombia {
+        height: 320px !important;
+        border-radius: 14px !important;
+    }
+    .card-stat-national {
+        border-radius: 14px !important;
+    }
+}
+
+
 
