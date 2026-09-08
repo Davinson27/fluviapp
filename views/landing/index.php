@@ -1121,16 +1121,10 @@ $currentUser = AuthHelper::user();
                 </div>
                 <div id="imageViewerCaption" class="mt-3 text-secondary small fw-semibold"></div>
             </div>
-            <div class="modal-footer border-secondary py-2 px-4 d-flex justify-content-between align-items-center" style="border-color: rgba(255, 255, 255, 0.1) !important;">
-                <span class="small text-muted"><i class="fa-solid fa-water me-1 text-info"></i>FluviApp - Visualizador</span>
-                <div class="d-flex gap-2">
-                    <a id="imageViewerFullLink" href="#" target="_blank" class="btn btn-outline-info btn-sm">
-                        <i class="fa-solid fa-arrow-up-right-from-square me-1"></i>Ver Original
-                    </a>
-                    <button type="button" class="btn btn-secondary btn-sm px-3" data-bs-dismiss="modal">
-                        <i class="fa-solid fa-xmark me-1"></i>Cerrar
-                    </button>
-                </div>
+            <div class="modal-footer border-secondary py-2 px-4 d-flex justify-content-end align-items-center" style="border-color: rgba(255, 255, 255, 0.1) !important;">
+                <button type="button" class="btn btn-secondary btn-sm px-4 fw-semibold" data-bs-dismiss="modal">
+                    <i class="fa-solid fa-xmark me-1"></i>Cerrar
+                </button>
             </div>
         </div>
     </div>

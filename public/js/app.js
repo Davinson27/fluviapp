@@ -16,14 +16,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const imgEl = document.getElementById('imageViewerImg');
         const titleEl = document.getElementById('imageViewerTitle');
         const captionEl = document.getElementById('imageViewerCaption');
-        const linkEl = document.getElementById('imageViewerFullLink');
 
         if (!modalEl || !imgEl) return;
 
         imgEl.src = src;
         if (titleEl) titleEl.textContent = title || 'Visualización Ampliada';
         if (captionEl) captionEl.textContent = caption || '';
-        if (linkEl) linkEl.href = src;
 
         if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
             const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
