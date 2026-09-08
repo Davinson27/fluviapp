@@ -2,79 +2,88 @@
 $currentUser = AuthHelper::user();
 $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
 ?>
-<!-- Sidebar -->
-<div class="sidebar bg-dark text-white" id="sidebar-wrapper">
-    <div class="sidebar-heading text-center py-4 primary-text fs-4 fw-bold text-uppercase border-bottom border-secondary">
-        <div class="d-flex justify-content-center mb-2">
-            <img src="<?= BASE_URL ?>/public/img/logo.jpg" alt="FluviApp Logo" class="brand-logo-img shadow" style="width: 58px; height: 58px;">
+<!-- Menú Lateral Desplegable (Offcanvas) -->
+<div class="offcanvas offcanvas-start bg-dark text-white sidebar-offcanvas" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
+    <div class="offcanvas-header border-bottom border-secondary py-3 px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <img src="<?= BASE_URL ?>/public/img/logo.jpg" alt="FluviApp Logo" class="brand-logo-img shadow" style="width: 44px; height: 44px;">
+            <div>
+                <h5 class="offcanvas-title text-white fw-bold m-0" id="sidebarOffcanvasLabel">Fluvi<span class="text-info">App</span></h5>
+                <small class="text-muted" style="font-size: 0.75rem;">Gestión Fluvial</small>
+            </div>
         </div>
-        <div class="d-flex align-items-center justify-content-center">
-            <span>Fluvi<span class="text-info">App</span></span>
-        </div>
-        <div class="small text-muted fs-6 fw-normal text-capitalize mt-1">Gestión Fluvial</div>
-        <?php if (!empty($currentUser['departamento'])): ?>
-            <div class="mt-2"><span class="badge bg-warning text-dark text-capitalize fw-semibold px-2 py-1" style="font-size: 0.75rem;"><i class="fa-solid fa-location-dot me-1"></i><?= htmlspecialchars($currentUser['departamento']) ?></span></div>
-        <?php elseif (($currentUser['rol'] ?? '') === 'admin'): ?>
-            <div class="mt-2"><span class="badge bg-danger text-white text-capitalize fw-semibold px-2 py-1" style="font-size: 0.75rem;"><i class="fa-solid fa-earth-americas me-1"></i>Ámbito Nacional</span></div>
-        <?php endif; ?>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
     </div>
-    <div class="list-group list-group-flush my-3">
-        <?php if (AuthHelper::isCliente()): ?>
-        <!-- Menú del Portal de Pasajeros -->
-        <a href="<?= BASE_URL ?>/portal" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/portal') && !str_contains($currentRoute, '/cliente/') ? 'active' : '' ?>">
-            <i class="fa-solid fa-compass me-3 text-info"></i>Explorar Rutas
-        </a>
-        <a href="<?= BASE_URL ?>/cliente/mis-boletos" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/mis-boletos') ? 'active' : '' ?>">
-            <i class="fa-solid fa-ticket me-3 text-success"></i>Mis Tiquetes
-        </a>
-        <a href="<?= BASE_URL ?>/cliente/enviar-encomienda" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/enviar-encomienda') ? 'active' : '' ?>">
-            <i class="fa-solid fa-boxes-packing me-3 text-warning"></i>Enviar Encomienda
-        </a>
-        <a href="<?= BASE_URL ?>/cliente/mis-encomiendas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/mis-encomiendas') ? 'active' : '' ?>">
-            <i class="fa-solid fa-box me-3 text-primary"></i>Mis Encomiendas
-        </a>
-        <a href="<?= BASE_URL ?>/perfil" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/perfil') ? 'active' : '' ?>">
-            <i class="fa-solid fa-circle-user me-3 text-info"></i>Mi Perfil
-        </a>
-        <?php else: ?>
-        <!-- Menú Administrativo / Operativo -->
-        <a href="<?= BASE_URL ?>/dashboard" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/dashboard') ? 'active' : '' ?>">
-            <i class="fa-solid fa-gauge me-3 text-info"></i>Dashboard
-        </a>
-        <a href="<?= BASE_URL ?>/viajes" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/viajes') ? 'active' : '' ?>">
-            <i class="fa-solid fa-compass me-3 text-warning"></i>Itinerarios y Viajes
-        </a>
-        <a href="<?= BASE_URL ?>/boletos" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/boletos') ? 'active' : '' ?>">
-            <i class="fa-solid fa-ticket me-3 text-success"></i>Boletería / Pasajes
-        </a>
-        <a href="<?= BASE_URL ?>/cargas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/cargas') ? 'active' : '' ?>">
-            <i class="fa-solid fa-boxes-packing me-3 text-primary"></i>Carga y Encomiendas
-        </a>
-        <a href="<?= BASE_URL ?>/embarcaciones" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/embarcaciones') ? 'active' : '' ?>">
-            <i class="fa-solid fa-anchor me-3 text-info"></i>Flota Fluvial
-        </a>
-        <a href="<?= BASE_URL ?>/rutas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/rutas') ? 'active' : '' ?>">
-            <i class="fa-solid fa-route me-3 text-danger"></i>Rutas Fluviales
-        </a>
-        <a href="<?= BASE_URL ?>/muelles" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/muelles') ? 'active' : '' ?>">
-            <i class="fa-solid fa-water me-3 text-cyan"></i>Muelles y Puertos
-        </a>
-        <?php if ($currentUser && in_array($currentUser['rol'], ['admin', 'operador'])): ?>
-        <a href="<?= BASE_URL ?>/reportes" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/reportes') ? 'active' : '' ?>">
-            <i class="fa-solid fa-chart-line me-3 text-light"></i>Reportes y Estadísticas
-        </a>
-        <?php endif; ?>
-        <?php if ($currentUser && $currentUser['rol'] === 'admin'): ?>
-        <a href="<?= BASE_URL ?>/usuarios" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/usuarios') ? 'active' : '' ?>">
-            <i class="fa-solid fa-users-gear me-3 text-warning"></i>Usuarios y Roles
-        </a>
-        <?php endif; ?>
-        <a href="<?= BASE_URL ?>/perfil" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/perfil') ? 'active' : '' ?>">
-            <i class="fa-solid fa-circle-user me-3 text-info"></i>Mi Perfil
-        </a>
+    
+    <div class="offcanvas-body p-0 d-flex flex-column" style="overflow-y: auto;">
+        <?php if (!empty($currentUser['departamento'])): ?>
+            <div class="px-4 pt-3">
+                <span class="badge bg-warning text-dark text-capitalize fw-semibold px-2 py-1 w-100 text-center shadow-sm" style="font-size: 0.75rem;"><i class="fa-solid fa-location-dot me-1"></i><?= htmlspecialchars($currentUser['departamento']) ?></span>
+            </div>
+        <?php elseif (($currentUser['rol'] ?? '') === 'admin'): ?>
+            <div class="px-4 pt-3">
+                <span class="badge bg-danger text-white text-capitalize fw-semibold px-2 py-1 w-100 text-center shadow-sm" style="font-size: 0.75rem;"><i class="fa-solid fa-earth-americas me-1"></i>Ámbito Nacional</span>
+            </div>
         <?php endif; ?>
 
-        <div class="px-3 mt-4 pt-3 border-top border-secondary">
+        <div class="list-group list-group-flush my-3 flex-grow-1 sidebar-offcanvas-menu">
+            <?php if (AuthHelper::isCliente()): ?>
+            <!-- Menú del Portal de Pasajeros -->
+            <a href="<?= BASE_URL ?>/portal" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/portal') && !str_contains($currentRoute, '/cliente/') ? 'active' : '' ?>">
+                <i class="fa-solid fa-compass me-3 text-info"></i>Explorar Rutas
+            </a>
+            <a href="<?= BASE_URL ?>/cliente/mis-boletos" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/mis-boletos') ? 'active' : '' ?>">
+                <i class="fa-solid fa-ticket me-3 text-success"></i>Mis Tiquetes
+            </a>
+            <a href="<?= BASE_URL ?>/cliente/enviar-encomienda" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/enviar-encomienda') ? 'active' : '' ?>">
+                <i class="fa-solid fa-boxes-packing me-3 text-warning"></i>Enviar Encomienda
+            </a>
+            <a href="<?= BASE_URL ?>/cliente/mis-encomiendas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/mis-encomiendas') ? 'active' : '' ?>">
+                <i class="fa-solid fa-box me-3 text-primary"></i>Mis Encomiendas
+            </a>
+            <a href="<?= BASE_URL ?>/perfil" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/perfil') ? 'active' : '' ?>">
+                <i class="fa-solid fa-circle-user me-3 text-info"></i>Mi Perfil
+            </a>
+            <?php else: ?>
+            <!-- Menú Administrativo / Operativo -->
+            <a href="<?= BASE_URL ?>/dashboard" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/dashboard') ? 'active' : '' ?>">
+                <i class="fa-solid fa-gauge me-3 text-info"></i>Dashboard
+            </a>
+            <a href="<?= BASE_URL ?>/viajes" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/viajes') ? 'active' : '' ?>">
+                <i class="fa-solid fa-compass me-3 text-warning"></i>Itinerarios y Viajes
+            </a>
+            <a href="<?= BASE_URL ?>/boletos" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/boletos') ? 'active' : '' ?>">
+                <i class="fa-solid fa-ticket me-3 text-success"></i>Boletería / Pasajes
+            </a>
+            <a href="<?= BASE_URL ?>/cargas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/cargas') ? 'active' : '' ?>">
+                <i class="fa-solid fa-boxes-packing me-3 text-primary"></i>Carga y Encomiendas
+            </a>
+            <a href="<?= BASE_URL ?>/embarcaciones" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/embarcaciones') ? 'active' : '' ?>">
+                <i class="fa-solid fa-anchor me-3 text-info"></i>Flota Fluvial
+            </a>
+            <a href="<?= BASE_URL ?>/rutas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/rutas') ? 'active' : '' ?>">
+                <i class="fa-solid fa-route me-3 text-danger"></i>Rutas Fluviales
+            </a>
+            <a href="<?= BASE_URL ?>/muelles" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/muelles') ? 'active' : '' ?>">
+                <i class="fa-solid fa-water me-3 text-cyan"></i>Muelles y Puertos
+            </a>
+            <?php if ($currentUser && in_array($currentUser['rol'], ['admin', 'operador'])): ?>
+            <a href="<?= BASE_URL ?>/reportes" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/reportes') ? 'active' : '' ?>">
+                <i class="fa-solid fa-chart-line me-3 text-light"></i>Reportes y Estadísticas
+            </a>
+            <?php endif; ?>
+            <?php if ($currentUser && $currentUser['rol'] === 'admin'): ?>
+            <a href="<?= BASE_URL ?>/usuarios" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/usuarios') ? 'active' : '' ?>">
+                <i class="fa-solid fa-users-gear me-3 text-warning"></i>Usuarios y Roles
+            </a>
+            <?php endif; ?>
+            <a href="<?= BASE_URL ?>/perfil" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/perfil') ? 'active' : '' ?>">
+                <i class="fa-solid fa-circle-user me-3 text-info"></i>Mi Perfil
+            </a>
+            <?php endif; ?>
+        </div>
+
+        <div class="px-3 py-3 border-top border-secondary mt-auto bg-black bg-opacity-25">
             <a href="<?= BASE_URL ?>/" target="_blank" class="btn btn-outline-info btn-sm w-100 text-start fw-semibold mb-2">
                 <i class="fa-solid fa-globe me-2"></i>Página Pública / Landing
             </a>
@@ -84,17 +93,22 @@ $currentRoute = $_SERVER['REQUEST_URI'] ?? '';
         </div>
     </div>
 </div>
-<!-- /#sidebar-wrapper -->
+<!-- /#sidebarOffcanvas -->
 
 <!-- Page Content Wrapper -->
 <div id="page-content-wrapper" class="w-100">
     <!-- Navbar superior -->
-    <nav class="navbar navbar-expand-lg navbar-app px-4 py-3" style="position: relative; z-index: 1050;">
+    <nav class="navbar navbar-expand-lg navbar-app px-3 px-md-4 py-3" style="position: relative; z-index: 1050;">
         <div class="d-flex align-items-center">
-            <button class="btn btn-outline-secondary me-3" id="menu-toggle">
-                <i class="fa-solid fa-bars"></i>
+            <!-- Botón 3 barritas que activa el menú lateral desplegable -->
+            <button class="btn btn-outline-primary me-2 me-md-3 d-flex align-items-center justify-content-center shadow-sm" id="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" title="Menú de Navegación" style="width: 42px; height: 42px; border-radius: 10px;">
+                <i class="fa-solid fa-bars fs-5"></i>
             </button>
-            <h5 class="m-0 text-dark fw-bold"><?= htmlspecialchars($pageTitle ?? APP_NAME) ?></h5>
+            <div class="d-flex align-items-center me-2 me-md-3">
+                <img src="<?= BASE_URL ?>/public/img/logo.jpg" alt="FluviApp Logo" class="brand-logo-img me-2" style="width: 38px; height: 38px;">
+                <span class="fw-bold fs-5" style="color: var(--primary-color);">Fluvi<span class="text-info">App</span></span>
+            </div>
+            <h5 class="m-0 text-dark fw-bold border-start ps-3 d-none d-md-inline-block"><?= htmlspecialchars($pageTitle ?? APP_NAME) ?></h5>
         </div>
         
         <div class="ms-auto d-flex align-items-center gap-2">

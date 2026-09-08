@@ -78,44 +78,47 @@ body {
 
 #wrapper {
     min-height: 100vh;
+    width: 100%;
 }
 
-/* Sidebar Modernizado */
-#sidebar-wrapper {
-    min-width: var(--sidebar-width);
-    max-width: var(--sidebar-width);
-    min-height: 100vh;
-    transition: margin 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    background: linear-gradient(180deg, #050b14 0%, #091527 50%, #040912 100%);
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
+/* Menú Lateral Desplegable (Offcanvas) */
+.offcanvas.sidebar-offcanvas,
+#sidebarOffcanvas {
+    width: 290px !important;
+    background: linear-gradient(180deg, #050b14 0%, #091527 50%, #040912 100%) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 6px 0 35px rgba(0, 0, 0, 0.65) !important;
+    z-index: 1070 !important;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-.sidebar-heading {
-    letter-spacing: 0.05em;
+.sidebar-offcanvas .offcanvas-header {
     background: rgba(255, 255, 255, 0.02);
 }
 
+.sidebar-offcanvas-menu .list-group-item,
 #sidebar-wrapper .list-group-item {
     border: none;
-    padding: 12px 20px;
-    font-size: 0.9rem;
+    padding: 13px 22px;
+    font-size: 0.92rem;
     font-weight: 500;
     color: #cbd5e1 !important;
     transition: all 0.2s ease;
     border-left: 4px solid transparent;
     border-radius: 0 10px 10px 0;
     margin-right: 12px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
 }
 
+.sidebar-offcanvas-menu .list-group-item:hover,
 #sidebar-wrapper .list-group-item:hover {
     background-color: rgba(14, 165, 233, 0.15) !important;
     color: #38bdf8 !important;
     border-left-color: #38bdf8;
-    transform: translateX(4px);
+    transform: translateX(5px);
 }
 
+.sidebar-offcanvas-menu .list-group-item.active,
 #sidebar-wrapper .list-group-item.active {
     background: linear-gradient(90deg, rgba(14, 165, 233, 0.25) 0%, rgba(14, 165, 233, 0.05) 100%) !important;
     color: #38bdf8 !important;
@@ -127,6 +130,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    width: 100%;
     overflow-x: hidden;
     background-color: var(--bg-body);
     transition: background-color 0.3s ease;

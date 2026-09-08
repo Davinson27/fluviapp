@@ -3,23 +3,32 @@
 // =======================================================
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Toggle sidebar
+    // Control del Menú Lateral Desplegable (Offcanvas)
     const menuToggle = document.getElementById('menu-toggle');
-    const wrapper = document.getElementById('wrapper');
+    const sidebarOffcanvas = document.getElementById('sidebarOffcanvas');
 
-    if (menuToggle && wrapper) {
+    if (menuToggle && sidebarOffcanvas) {
         menuToggle.addEventListener('click', function (e) {
             e.preventDefault();
-            wrapper.classList.toggle('toggled');
+            if (typeof bootstrap !== 'undefined' && bootstrap.Offcanvas) {
+                const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(sidebarOffcanvas);
+                bsOffcanvas.toggle();
+            }
         });
     }
 
-    // Auto-dismiss alerts after 5 seconds
+    // Auto-cerrar alertas después de 6 segundos
     const alerts = document.querySelectorAll('.alert-dismissible');
     alerts.forEach(function (alert) {
         setTimeout(function () {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
+            if (typeof bootstrap !== 'undefined' && bootstrap.Alert) {
+                try {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                    bsAlert.close();
+                } catch (e) {
+                    // Alert already closed
+                }
+            }
         }, 6000);
     });
 });
