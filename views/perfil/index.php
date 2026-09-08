@@ -45,10 +45,10 @@
                             </p>
                             
                             <div class="d-flex flex-wrap gap-2 align-items-center">
-                                <label class="btn btn-primary btn-sm mb-0">
+                                <label for="input-foto" class="btn btn-primary btn-sm mb-0 cursor-pointer shadow-sm">
                                     <i class="fa-solid fa-camera me-1"></i>Seleccionar Nueva Foto
-                                    <input type="file" name="foto" id="input-foto" class="d-none" accept="image/jpeg,image/png,image/webp,image/gif">
                                 </label>
+                                <input type="file" name="foto" id="input-foto" class="form-control form-control-sm d-inline-block w-auto" style="max-width: 260px;" accept="image/jpeg,image/png,image/webp,image/gif">
 
                                 <?php if (!empty($usuario['foto'])): ?>
                                     <div class="form-check ms-md-2 mt-2 mt-md-0">
