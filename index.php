@@ -8,11 +8,6 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/app/Helpers/SessionHelper.php';
 require_once __DIR__ . '/app/Helpers/AuthHelper.php';
 
-SessionHelper::init();
-if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
-    SessionHelper::requireCsrf();
-}
-
 // Obtener ruta solicitada
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
@@ -24,6 +19,11 @@ if ($baseDir !== '/' && strpos($path, $baseDir) === 0) {
     $path = substr($path, strlen($baseDir));
 }
 $path = '/' . trim($path, '/');
+
+SessionHelper::init();
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST' && !str_starts_with($path, '/api/')) {
+    SessionHelper::requireCsrf();
+}
 
 // Enrutamiento
 switch ($path) {
@@ -48,6 +48,110 @@ switch ($path) {
     case '/api/rios':
         require_once __DIR__ . '/app/Controllers/LandingController.php';
         (new LandingController())->apiRios();
+        break;
+
+    case '/api/chatbot/consultar':
+        require_once __DIR__ . '/app/Controllers/LandingController.php';
+        (new LandingController())->apiChatbot();
+        break;
+
+    // Pasarela de Pagos Wompi (v2.0)
+    case '/cliente/iniciar-pago-wompi':
+        require_once __DIR__ . '/app/Controllers/PagosController.php';
+        (new PagosController())->iniciarPago();
+        break;
+
+    case '/api/pagos/webhook-wompi':
+        require_once __DIR__ . '/app/Controllers/PagosController.php';
+        (new PagosController())->webhook();
+        break;
+
+    case '/cliente/simular-aprobacion-wompi':
+        require_once __DIR__ . '/app/Controllers/PagosController.php';
+        (new PagosController())->simularAprobacion();
+        break;
+
+    case '/cliente/pago-resultado':
+        require_once __DIR__ . '/app/Controllers/PagosController.php';
+        (new PagosController())->resultado();
+        break;
+
+    // Validación QR y Check-in en Muelle (v2.0)
+    case '/operaciones/checkin':
+        require_once __DIR__ . '/app/Controllers/CheckinController.php';
+        (new CheckinController())->checkin();
+        break;
+
+    case '/api/checkin/validar':
+        require_once __DIR__ . '/app/Controllers/CheckinController.php';
+        (new CheckinController())->validarBoleto();
+        break;
+
+    case '/operaciones/entrega-carga':
+        require_once __DIR__ . '/app/Controllers/CheckinController.php';
+        (new CheckinController())->entregaCarga();
+        break;
+
+    case '/api/carga/confirmar-entrega':
+        require_once __DIR__ . '/app/Controllers/CheckinController.php';
+        (new CheckinController())->confirmarEntregaCarga();
+        break;
+
+    // Rastreo Fluvial en Vivo (v2.0)
+    case '/capitan/navegacion':
+        require_once __DIR__ . '/app/Controllers/TrackingController.php';
+        (new TrackingController())->capitanNavegacion();
+        break;
+
+    case '/api/tracking/actualizar':
+        require_once __DIR__ . '/app/Controllers/TrackingController.php';
+        (new TrackingController())->actualizarPosicion();
+        break;
+
+    case '/api/tracking/posicion-viaje':
+        require_once __DIR__ . '/app/Controllers/TrackingController.php';
+        (new TrackingController())->posicionViaje();
+        break;
+
+    case '/tracking/viaje':
+        require_once __DIR__ . '/app/Controllers/TrackingController.php';
+        (new TrackingController())->viajeEnVivo();
+        break;
+
+    // Gestión Integral de Flota, Mantenimiento y Combustible (v2.0)
+    case '/flota':
+        require_once __DIR__ . '/app/Controllers/FlotaController.php';
+        (new FlotaController())->index();
+        break;
+
+    case '/flota/mantenimiento':
+        require_once __DIR__ . '/app/Controllers/FlotaController.php';
+        (new FlotaController())->mantenimiento();
+        break;
+
+    case '/flota/mantenimiento/guardar':
+        require_once __DIR__ . '/app/Controllers/FlotaController.php';
+        (new FlotaController())->guardarMantenimiento();
+        break;
+
+    case '/flota/combustible':
+        require_once __DIR__ . '/app/Controllers/FlotaController.php';
+        (new FlotaController())->combustible();
+        break;
+
+    case '/flota/combustible/guardar':
+        require_once __DIR__ . '/app/Controllers/FlotaController.php';
+        (new FlotaController())->guardarCombustible();
+        break;
+
+    case '/flota/documentos':
+        require_once __DIR__ . '/app/Controllers/FlotaController.php';
+        (new FlotaController())->documentos();
+        break;
+
+    case '/flota/documentos/guardar':
+        require_once __DIR__ . '/app/Controllers/FlotaController.php';
+        (new FlotaController())->guardarDocumento();
         break;
 
     // Auth

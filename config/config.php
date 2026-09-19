@@ -30,12 +30,12 @@ if (!headers_sent()) {
     header('X-Frame-Options: SAMEORIGIN');
     header('Referrer-Policy: strict-origin-when-cross-origin');
     header('X-XSS-Protection: 0');
-    header("Permissions-Policy: camera=(), microphone=(), geolocation=()");
+    header("Permissions-Policy: camera=(self), microphone=(), geolocation=(self)");
 }
 
 define('APP_NAME', 'FluviApp');
 define('APP_TAGLINE', 'Sistema de Gestión y Operaciones Fluviales');
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '2.0.0');
 
 $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443)) ? "https://" : "http://";
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
@@ -45,6 +45,13 @@ $basePath = rtrim($scriptDir, '/');
 define('BASE_URL', $protocol . $host . $basePath);
 define('ROOT_PATH', dirname(__DIR__));
 
-define('METODOS_PAGO', ['efectivo', 'transferencia', 'tarjeta']);
+define('METODOS_PAGO', ['efectivo', 'transferencia', 'tarjeta', 'wompi']);
 define('ROLES_STAFF', ['admin', 'operador', 'taquilla', 'capitan']);
 define('ROLES_SISTEMA', ['admin', 'operador', 'taquilla', 'capitan', 'cliente']);
+
+// Configuración Wompi Sandbox / Producción (v2.0)
+define('WOMPI_MODE', env('WOMPI_MODE', 'sandbox'));
+define('WOMPI_PUBLIC_KEY', env('WOMPI_PUBLIC_KEY', 'pub_test_Q5yDA9xoKdePzhSGeVe9KStXTIHsIOuh'));
+define('WOMPI_PRIVATE_KEY', env('WOMPI_PRIVATE_KEY', 'prv_test_5n04Xj1M1t5fR6h9q2w4e6r8t0y2u4i6'));
+define('WOMPI_INTEGRITY_SECRET', env('WOMPI_INTEGRITY_SECRET', 'test_integrity_Q5yDA9xoKdePzhSGeVe9KStXTIHsIOuh'));
+define('WOMPI_EVENTS_SECRET', env('WOMPI_EVENTS_SECRET', 'test_events_Q5yDA9xoKdePzhSGeVe9KStXTIHsIOuh'));

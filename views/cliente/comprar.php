@@ -36,10 +36,16 @@
                 </div>
 
                 <!-- Formulario de Compra -->
-                <form action="<?= BASE_URL ?>/cliente/procesar-compra" method="POST">
+                <form action="<?= BASE_URL ?>/cliente/procesar-compra" method="POST" id="form-comprar-pasaje">
                     <?= SessionHelper::csrfField() ?>
                     <input type="hidden" name="viaje_id" value="<?= $viaje['id'] ?>">
                     <input type="hidden" name="precio_pagado" value="<?= $viaje['precio_pasaje'] ?>">
+                    <input type="hidden" name="numero_asiento" id="input_numero_asiento" value="">
+
+                    <!-- Mapa Interactivo de Asientos (FluviApp v2.0) -->
+                    <?php if (!empty($mapaAsientos)): ?>
+                        <?php require __DIR__ . '/../boletos/seat_map.php'; ?>
+                    <?php endif; ?>
 
                     <h6 class="fw-bold text-dark border-bottom pb-2 mb-3">
                         <i class="fa-solid fa-user-check me-2 text-success"></i>Datos del Pasajero
@@ -60,10 +66,11 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Método de Pago *</label>
-                            <select name="metodo_pago" class="form-select" required>
-                                <option value="transferencia">Transferencia en Línea (Nequi / Bancolombia / Daviplata)</option>
-                                <option value="tarjeta">Tarjeta Débito / Crédito</option>
-                                <option value="efectivo">Pago en Taquilla / Muelle antes de abordar</option>
+                            <select name="metodo_pago" class="form-select border-primary" required>
+                                <option value="wompi" selected>💳 Pago Seguro en Línea Wompi (PSE, Nequi, Tarjetas) - Recomendado</option>
+                                <option value="transferencia">Transferencia Bancaria Directa (Bancolombia / Nequi)</option>
+                                <option value="tarjeta">Tarjeta Débito / Crédito Presencial</option>
+                                <option value="efectivo">Pago en Efectivo en Taquilla antes de abordar</option>
                             </select>
                         </div>
                     </div>

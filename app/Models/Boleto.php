@@ -125,10 +125,20 @@ class Boleto extends Model {
 
             $codigoBoleto = 'BOL-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
 
-            $stmtAsiento = $this->db->prepare("SELECT COUNT(*) AS total FROM boletos WHERE viaje_id = :viaje_id AND estado != 'cancelado'");
-            $stmtAsiento->execute(['viaje_id' => (int)$data['viaje_id']]);
-            $rowAsiento = $stmtAsiento->fetch();
-            $numAsiento = ((int)($rowAsiento['total'] ?? 0)) + 1;
+            // Si se especificó un número de asiento, verificar que no esté ocupado
+            if (!empty($data['numero_asiento'])) {
+                $numAsiento = (int)$data['numero_asiento'];
+                $stmtCheck = $this->db->prepare("SELECT id FROM boletos WHERE viaje_id = :viaje_id AND numero_asiento = :asiento AND estado != 'cancelado' LIMIT 1");
+                $stmtCheck->execute(['viaje_id' => (int)$data['viaje_id'], 'asiento' => $numAsiento]);
+                if ($stmtCheck->fetch()) {
+                    throw new Exception("El asiento #{$numAsiento} ya está ocupado en este viaje.");
+                }
+            } else {
+                $stmtAsiento = $this->db->prepare("SELECT COUNT(*) AS total FROM boletos WHERE viaje_id = :viaje_id AND estado != 'cancelado'");
+                $stmtAsiento->execute(['viaje_id' => (int)$data['viaje_id']]);
+                $rowAsiento = $stmtAsiento->fetch();
+                $numAsiento = ((int)($rowAsiento['total'] ?? 0)) + 1;
+            }
 
             $capacidad = (int)$viaje['capacidad_pasajeros'];
             if ($capacidad > 0 && $numAsiento > $capacidad) {
@@ -141,17 +151,20 @@ class Boleto extends Model {
             }
 
             $metodo = $data['metodo_pago'] ?? 'efectivo';
-            if (!in_array($metodo, ['efectivo', 'transferencia', 'tarjeta'], true)) {
+            if (!in_array($metodo, ['efectivo', 'transferencia', 'tarjeta', 'wompi'], true)) {
                 $metodo = 'efectivo';
             }
 
+            require_once __DIR__ . '/../Helpers/QrCodeHelper.php';
+            $qrToken = QrCodeHelper::generateToken('FLV-BOL', (int)$data['viaje_id'], $codigoBoleto);
+
             $stmtInsert = $this->db->prepare("
                 INSERT INTO `{$this->table}` (
-                    viaje_id, usuario_id, codigo_boleto, pasajero_documento, pasajero_nombre, 
+                    viaje_id, usuario_id, codigo_boleto, codigo_qr_token, pasajero_documento, pasajero_nombre, 
                     pasajero_telefono, numero_asiento, precio_pagado, metodo_pago, estado, vendido_por_id
                 )
                 VALUES (
-                    :viaje_id, :usuario_id, :codigo_boleto, :pasajero_documento, :pasajero_nombre,
+                    :viaje_id, :usuario_id, :codigo_boleto, :codigo_qr_token, :pasajero_documento, :pasajero_nombre,
                     :pasajero_telefono, :numero_asiento, :precio_pagado, :metodo_pago, :estado, :vendido_por_id
                 )
             ");
@@ -159,6 +172,7 @@ class Boleto extends Model {
                 'viaje_id'           => (int)$data['viaje_id'],
                 'usuario_id'         => !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null,
                 'codigo_boleto'      => $codigoBoleto,
+                'codigo_qr_token'    => $qrToken,
                 'pasajero_documento' => trim($data['pasajero_documento']),
                 'pasajero_nombre'    => trim($data['pasajero_nombre']),
                 'pasajero_telefono'  => trim($data['pasajero_telefono'] ?? ''),

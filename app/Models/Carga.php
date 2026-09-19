@@ -143,22 +143,32 @@ class Carga extends Model {
             // Generar número de guía único
             $guiaNumero = 'GUIA-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 6));
 
+            require_once __DIR__ . '/../Helpers/QrCodeHelper.php';
+            $qrToken = QrCodeHelper::generateToken('FLV-CRG', (int)$data['viaje_id'], $guiaNumero);
+
+            // Cálculo de peso volumétrico (largo * ancho * alto / 5000)
+            $largo = (float)($data['largo_cm'] ?? 0.0);
+            $ancho = (float)($data['ancho_cm'] ?? 0.0);
+            $alto  = (float)($data['alto_cm'] ?? 0.0);
+            $pesoVolumetrico = ($largo > 0 && $ancho > 0 && $alto > 0) ? round(($largo * $ancho * $alto) / 5000.0, 2) : 0.0;
+
             $stmt = $this->db->prepare("
                 INSERT INTO `{$this->table}` (
-                    viaje_id, usuario_id, guia_numero, remitente_nombre, remitente_telefono, remitente_email,
+                    viaje_id, usuario_id, guia_numero, codigo_qr_token, remitente_nombre, remitente_telefono, remitente_email,
                     destinatario_nombre, destinatario_telefono, descripcion_carga,
-                    peso_kg, valor_declarado, valor_flete, estado, registrado_por_id
+                    peso_kg, largo_cm, ancho_cm, alto_cm, peso_volumetrico_kg, valor_declarado, valor_flete, estado, registrado_por_id
                 )
                 VALUES (
-                    :viaje_id, :usuario_id, :guia_numero, :remitente_nombre, :remitente_telefono, :remitente_email,
+                    :viaje_id, :usuario_id, :guia_numero, :token, :remitente_nombre, :remitente_telefono, :remitente_email,
                     :destinatario_nombre, :destinatario_telefono, :descripcion_carga,
-                    :peso_kg, :valor_declarado, :valor_flete, :estado, :registrado_por_id
+                    :peso_kg, :largo, :ancho, :alto, :peso_vol, :valor_declarado, :valor_flete, :estado, :registrado_por_id
                 )
             ");
             $stmt->execute([
                 'viaje_id'              => (int)$data['viaje_id'],
                 'usuario_id'            => !empty($data['usuario_id']) ? (int)$data['usuario_id'] : null,
                 'guia_numero'           => $guiaNumero,
+                'token'                 => $qrToken,
                 'remitente_nombre'      => trim($data['remitente_nombre']),
                 'remitente_telefono'    => trim($data['remitente_telefono']),
                 'remitente_email'       => !empty($data['remitente_email']) ? trim($data['remitente_email']) : null,
@@ -166,6 +176,10 @@ class Carga extends Model {
                 'destinatario_telefono' => trim($data['destinatario_telefono']),
                 'descripcion_carga'     => trim($data['descripcion_carga']),
                 'peso_kg'               => $peso,
+                'largo'                 => $largo,
+                'ancho'                 => $ancho,
+                'alto'                  => $alto,
+                'peso_vol'              => $pesoVolumetrico,
                 'valor_declarado'       => (float)($data['valor_declarado'] ?? 0),
                 'valor_flete'           => (float)$data['valor_flete'],
                 'estado'                => 'registrada',

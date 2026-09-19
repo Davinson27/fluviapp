@@ -249,4 +249,75 @@ No inventes fechas que no estén en la lista.";
 
         return "{$diaSemana} {$dia} de {$mes} de {$ano}";
     }
+
+    /**
+     * Responde preguntas generales del usuario mediante Chatbot Flotante (v2.0)
+     */
+    public function responderConsultaGeneral(string $pregunta, ?array $usuario = null): string {
+        $genero = $usuario['genero'] ?? 'otro';
+        $nombre = $usuario['nombre'] ?? '';
+        $tratamiento = self::obtenerTratamiento($genero);
+        $saludo = $tratamiento . (!empty($nombre) ? " " . explode(' ', $nombre)[0] : "");
+
+        // Si hay API key de Gemini, consultar modelo
+        if (!empty($this->apiKey)) {
+            $prompt = "Eres el Asistente Fluvial Virtual de FluviApp (v2.0), el sistema líder de transporte de pasajeros y encomiendas fluviales en Colombia (Río Magdalena, Cauca, Atrato, Sinú).
+El usuario se llama '{$saludo}'.
+Pregunta del usuario: \"{$pregunta}\"
+
+Información de FluviApp:
+- Boletos: Se compran en línea con pasarela Wompi (PSE, Nequi, Tarjetas) o en taquilla. Incluyen código QR de abordaje y selección de asiento en mapa visual.
+- Carga y Encomiendas: Se cotizan por peso real o volumétrico ((L x A x H) / 5000) a aprox $2.500 COP por kg. Se entregan con firma táctil digital.
+- Rastreo Fluvial: Puedes ver la lancha moviéndose en tiempo real en el mapa con Leaflet y ver el tiempo estimado de llegada (ETA).
+
+Instrucción:
+Responde de forma concisa (máximo 70 palabras), empática, clara y muy colombiana/profesional. Si preguntan por horarios o rutas, invítalos a usar el buscador del portal.";
+
+            try {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent?key=" . urlencode($this->apiKey);
+                $payload = [
+                    'contents' => [['role' => 'user', 'parts' => [['text' => $prompt]]]],
+                    'generationConfig' => ['temperature' => 0.4, 'maxOutputTokens' => 150]
+                ];
+                $ch = curl_init($url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 4);
+                $res = curl_exec($ch);
+                curl_close($ch);
+                if ($res) {
+                    $json = json_decode($res, true);
+                    $text = $json['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                    if (!empty($text)) return trim($text);
+                }
+            } catch (Throwable $e) {}
+        }
+
+        // Motor Heurístico de Conversación Local Autónomo
+        $p = strtolower(trim($pregunta));
+
+        if (str_contains($p, 'horario') || str_contains($p, 'salida') || str_contains($p, 'cuándo') || str_contains($p, 'viaje') || str_contains($p, 'ruta')) {
+            return "¡Con gusto, {$saludo}! Puedes consultar todos los horarios de salida y disponibilidad en tiempo real ingresando a nuestro Explorador de Rutas en el Portal. Allí podrás filtrar por puerto de origen, destino y fecha.";
+        }
+
+        if (str_contains($p, 'precio') || str_contains($p, 'costo') || str_contains($p, 'cuánto vale') || str_contains($p, 'tarifa') || str_contains($p, 'pasaje')) {
+            return "{$saludo}, las tarifas de pasaje varían según el trayecto fluvial (generalmente entre $20.000 y $60.000 COP). Al seleccionar tu ruta en el portal, verás el precio exacto con tasa portuaria y seguro fluvial incluidos.";
+        }
+
+        if (str_contains($p, 'encomienda') || str_contains($p, 'carga') || str_contains($p, 'paquete') || str_contains($p, 'flete') || str_contains($p, 'caja')) {
+            return "{$saludo}, en FluviApp transportamos tu carga de forma segura. El flete se liquida según el peso en báscula o peso volumétrico (largo x ancho x alto). Puedes solicitar el envío desde 'Enviar Encomienda' en el menú.";
+        }
+
+        if (str_contains($p, 'rastreo') || str_contains($p, 'dónde') || str_contains($p, 'gps') || str_contains($p, 'vivo') || str_contains($p, 'llegada')) {
+            return "{$saludo}, en FluviApp v2.0 puedes rastrear tu embarcación en vivo sobre el mapa interactivo desde 'Mis Boletos' o 'Rastreo Fluvial' y consultar el tiempo estimado de llegada (ETA) al muelle.";
+        }
+
+        if (str_contains($p, 'pago') || str_contains($p, 'wompi') || str_contains($p, 'nequi') || str_contains($p, 'tarjeta') || str_contains($p, 'pse')) {
+            return "{$saludo}, aceptamos pagos en línea 100% seguros mediante nuestra pasarela Wompi con Nequi, PSE y tarjetas, así como pagos en taquilla antes del zarpe.";
+        }
+
+        return "¡Hola, {$saludo}! Soy el Asistente Fluvial Virtual de FluviApp. Estoy aquí para ayudarte con horarios, compra de boletos con QR, cotización de encomiendas y rastreo de viajes en vivo. ¿En qué te puedo colaborar hoy?";
+    }
 }

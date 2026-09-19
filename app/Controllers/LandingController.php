@@ -149,4 +149,25 @@ class LandingController extends Controller {
         $rios = $this->rioModel->all();
         $this->json(['success' => true, 'total' => count($rios), 'data' => $rios]);
     }
+
+    public function apiChatbot(): void {
+        header('Content-Type: application/json; charset=utf-8');
+        $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+        $pregunta = trim($input['pregunta'] ?? '');
+
+        if (empty($pregunta)) {
+            echo json_encode(['respuesta' => 'Por favor escribe tu consulta para poder orientarte.']);
+            exit;
+        }
+
+        require_once ROOT_PATH . '/app/Services/AsistenteFluvialIA.php';
+        require_once ROOT_PATH . '/app/Helpers/AuthHelper.php';
+        $usuario = AuthHelper::user();
+
+        $ia = new AsistenteFluvialIA();
+        $respuesta = $ia->responderConsultaGeneral($pregunta, $usuario);
+
+        echo json_encode(['respuesta' => $respuesta]);
+        exit;
+    }
 }

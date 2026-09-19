@@ -14,10 +14,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css?v=<?= file_exists(ROOT_PATH . '/public/css/style.css') ? filemtime(ROOT_PATH . '/public/css/style.css') : time() ?>">
-    <!-- Theme Manager (Modo Oscuro) -->
-    <script src="<?= BASE_URL ?>/public/js/theme.js"></script>
+    <!-- PWA Manifest & Theme Color (FluviApp v2.0) -->
+    <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FluviApp">
+
     <script>
         window.fluviappBaseUrl = '<?= BASE_URL ?>';
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('<?= BASE_URL ?>/public/sw.js').catch(err => console.warn('SW Error:', err));
+            });
+        }
     </script>
 </head>
 <body>

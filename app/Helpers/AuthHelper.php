@@ -85,6 +85,11 @@ class AuthHelper {
         }
     }
 
+    public static function requireRole(string|array $roleOrRoles): void {
+        $roles = is_array($roleOrRoles) ? $roleOrRoles : [$roleOrRoles];
+        self::requireRoles($roles);
+    }
+
     public static function requireStaff(): void {
         self::requireRoles(ROLES_STAFF);
     }

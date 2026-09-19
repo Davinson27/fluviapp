@@ -28,6 +28,10 @@ class SessionHelper {
         ];
     }
 
+    public static function flash(string $type, string $message): void {
+        self::setFlash($type === 'error' ? 'danger' : $type, $message);
+    }
+
     public static function getFlash(): ?array {
         self::init();
         if (isset($_SESSION['flash'])) {

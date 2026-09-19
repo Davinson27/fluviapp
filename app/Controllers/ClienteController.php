@@ -114,16 +114,25 @@ class ClienteController extends Controller {
         $userDepto = $usuario['departamento'] ?? '';
 
         if (!empty($userDepto)) {
-            if (($viaje['origen_depto'] ?? '') !== $userDepto && ($viaje['destino_depto'] ?? '') !== $userDepto) {
+            $userDeptoNorm = $this->normalizarTexto($userDepto);
+            $origenNorm = $this->normalizarTexto($viaje['origen_depto'] ?? $viaje['origen_departamento'] ?? '');
+            $destinoNorm = $this->normalizarTexto($viaje['destino_depto'] ?? $viaje['destino_departamento'] ?? '');
+
+            if ($origenNorm !== $userDeptoNorm && $destinoNorm !== $userDeptoNorm) {
                 SessionHelper::setFlash('danger', "El viaje seleccionado no pertenece a su departamento registrado ({$userDepto}). Solo puede viajar en rutas de su departamento.");
                 $this->redirect('/portal');
             }
         }
 
+        require_once __DIR__ . '/../Models/Asiento.php';
+        $asientoModel = new Asiento();
+        $mapaAsientos = $asientoModel->getMapaAsientosPorViaje($viajeId);
+
         $this->render('cliente/comprar', [
-            'pageTitle' => 'Comprar Tiquete Fluvial - ' . APP_NAME,
-            'viaje'     => $viaje,
-            'usuario'   => $usuario
+            'pageTitle'    => 'Comprar Tiquete Fluvial - ' . APP_NAME,
+            'viaje'        => $viaje,
+            'usuario'      => $usuario,
+            'mapaAsientos' => $mapaAsientos
         ]);
     }
 
@@ -137,6 +146,7 @@ class ClienteController extends Controller {
         $nombre = trim($_POST['pasajero_nombre'] ?? '');
         $tel = trim($_POST['pasajero_telefono'] ?? '');
         $metodo = $this->sanitizePago($_POST['metodo_pago'] ?? 'transferencia');
+        $numeroAsiento = !empty($_POST['numero_asiento']) ? (int)$_POST['numero_asiento'] : null;
         $usuario = AuthHelper::user();
         $userDepto = $usuario['departamento'] ?? '';
 
@@ -147,10 +157,21 @@ class ClienteController extends Controller {
 
         if (!empty($userDepto)) {
             $viaje = $this->viajeModel->findWithDetails($viajeId);
-            if ($viaje && ($viaje['origen_depto'] ?? '') !== $userDepto && ($viaje['destino_depto'] ?? '') !== $userDepto) {
+            $userDeptoNorm = $this->normalizarTexto($userDepto);
+            $origenNorm = $this->normalizarTexto($viaje['origen_depto'] ?? $viaje['origen_departamento'] ?? '');
+            $destinoNorm = $this->normalizarTexto($viaje['destino_depto'] ?? $viaje['destino_departamento'] ?? '');
+
+            if ($viaje && $origenNorm !== $userDeptoNorm && $destinoNorm !== $userDeptoNorm) {
                 SessionHelper::setFlash('danger', "No puede comprar pasajes para rutas fuera de su departamento ({$userDepto}).");
                 $this->redirect('/portal');
             }
+        }
+
+        // Si el método seleccionado es Wompi, delegar en PagosController
+        if ($metodo === 'wompi') {
+            require_once __DIR__ . '/PagosController.php';
+            (new PagosController())->iniciarPago();
+            return;
         }
 
         try {
@@ -160,11 +181,12 @@ class ClienteController extends Controller {
                 'pasajero_documento' => $doc,
                 'pasajero_nombre'    => $nombre,
                 'pasajero_telefono'  => $tel,
+                'numero_asiento'     => $numeroAsiento,
                 'metodo_pago'        => $metodo,
                 'vendido_por_id'     => $usuario['id']
             ]);
 
-            SessionHelper::setFlash('success', '¡Tiquete comprado con éxito! Ya puedes ver tu ruta y tiquete.');
+            SessionHelper::setFlash('success', '¡Tiquete comprado con éxito! Ya puedes ver tu ruta y tiquete con código QR.');
             $this->redirect('/cliente/ver-ruta?id=' . $boletoId);
         } catch (Exception $e) {
             SessionHelper::setFlash('danger', $this->userErrorMessage($e, 'Error al procesar la compra.'));
@@ -243,7 +265,11 @@ class ClienteController extends Controller {
         $userDepto = $usuario['departamento'] ?? '';
         if (!empty($userDepto)) {
             $viaje = $this->viajeModel->findWithDetails($viajeId);
-            if ($viaje && ($viaje['origen_depto'] ?? '') !== $userDepto && ($viaje['destino_depto'] ?? '') !== $userDepto) {
+            $userDeptoNorm = $this->normalizarTexto($userDepto);
+            $origenNorm = $this->normalizarTexto($viaje['origen_depto'] ?? $viaje['origen_departamento'] ?? '');
+            $destinoNorm = $this->normalizarTexto($viaje['destino_depto'] ?? $viaje['destino_departamento'] ?? '');
+
+            if ($viaje && $origenNorm !== $userDeptoNorm && $destinoNorm !== $userDeptoNorm) {
                 SessionHelper::setFlash('danger', "No puede enviar encomiendas en viajes fuera de su departamento registrado ({$userDepto}).");
                 $this->redirect('/cliente/enviar-encomienda');
             }
@@ -357,6 +383,15 @@ class ClienteController extends Controller {
             'pageTitle' => 'Factura Oficial de Flete Fluvial - ' . $carga['guia_numero'],
             'carga'     => $carga
         ]);
+    }
+
+    private function normalizarTexto(string $str): string {
+        $str = mb_strtolower(trim($str), 'UTF-8');
+        $replacements = [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u',
+            'ü' => 'u', 'ñ' => 'n'
+        ];
+        return strtr($str, $replacements);
     }
 }
 

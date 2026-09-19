@@ -118,6 +118,15 @@
             <span>Atendido por:</span>
             <span><?= htmlspecialchars($boleto['vendedor_nombre'] ?? 'Taquilla') ?></span>
         </div>
+
+        <?php 
+        require_once __DIR__ . '/../../app/Helpers/QrCodeHelper.php';
+        $payload = QrCodeHelper::buildPayload('BOL', $boleto['codigo_boleto'], $boleto['codigo_qr_token'] ?? $boleto['codigo_boleto']);
+        ?>
+        <div class="text-center my-2 pt-2 border-top">
+            <?= QrCodeHelper::renderSvg($payload, 125) ?>
+            <div style="font-size: 0.65rem; font-weight: bold; margin-top: 4px; letter-spacing: 0.5px;">CÓDIGO QR DE ABORDAJE</div>
+        </div>
     </div>
 
     <div class="ticket-footer">

@@ -53,7 +53,11 @@ class Viaje extends Model {
             SELECT v.*,
                    r.distancia_km, r.duracion_estimada_min, r.tarifa_base,
                    mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio,
+                   mo.departamento AS origen_depto, mo.departamento AS origen_departamento,
+                   mo.latitud AS origen_lat, mo.longitud AS origen_lng,
                    md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio,
+                   md.departamento AS destino_depto, md.departamento AS destino_departamento,
+                   md.latitud AS destino_lat, md.longitud AS destino_lng,
                    e.nombre AS embarcacion_nombre, e.matricula AS embarcacion_matricula, e.tipo AS embarcacion_tipo,
                    e.capacidad_pasajeros AS embarcacion_cap_pasajeros,
                    e.capacidad_carga_kg AS embarcacion_cap_carga,
@@ -149,8 +153,12 @@ class Viaje extends Model {
         $sql = "
             SELECT v.*,
                    r.distancia_km, r.duracion_estimada_min,
-                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio, mo.departamento AS origen_departamento,
-                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio, md.departamento AS destino_departamento,
+                   mo.nombre AS origen_nombre, mo.municipio AS origen_municipio, mo.rio AS origen_rio,
+                   mo.departamento AS origen_depto, mo.departamento AS origen_departamento,
+                   mo.latitud AS origen_lat, mo.longitud AS origen_lng,
+                   md.nombre AS destino_nombre, md.municipio AS destino_municipio, md.rio AS destino_rio,
+                   md.departamento AS destino_depto, md.departamento AS destino_departamento,
+                   md.latitud AS destino_lat, md.longitud AS destino_lng,
                    e.nombre AS embarcacion_nombre, e.matricula AS embarcacion_matricula, e.tipo AS embarcacion_tipo,
                    u.nombre AS capitan_nombre
             FROM `{$this->table}` v

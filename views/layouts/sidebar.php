@@ -77,8 +77,23 @@ if (!empty($currentUser['id'])) {
             <a href="<?= BASE_URL ?>/cargas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/cargas') ? 'active' : '' ?>">
                 <i class="fa-solid fa-boxes-packing me-3 text-primary"></i>Carga y Encomiendas
             </a>
+            <!-- Módulos Operativos FluviApp v2.0 -->
+            <a href="<?= BASE_URL ?>/operaciones/checkin" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/operaciones/checkin') ? 'active' : '' ?>">
+                <i class="fa-solid fa-qrcode me-3 text-success"></i>Check-in Muelle QR
+            </a>
+            <a href="<?= BASE_URL ?>/operaciones/entrega-carga" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/operaciones/entrega-carga') ? 'active' : '' ?>">
+                <i class="fa-solid fa-signature me-3 text-warning"></i>Entrega de Carga Digital
+            </a>
+            <?php if ($currentUser && in_array($currentUser['rol'], ['capitan', 'operador', 'admin'])): ?>
+            <a href="<?= BASE_URL ?>/capitan/navegacion" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/capitan/navegacion') ? 'active' : '' ?>">
+                <i class="fa-solid fa-satellite-dish me-3 text-info"></i>Modo Capitán (GPS)
+            </a>
+            <?php endif; ?>
+            <a href="<?= BASE_URL ?>/flota" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/flota') ? 'active' : '' ?>">
+                <i class="fa-solid fa-anchor me-3 text-info"></i>Gestión de Flota v2.0
+            </a>
             <a href="<?= BASE_URL ?>/embarcaciones" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/embarcaciones') ? 'active' : '' ?>">
-                <i class="fa-solid fa-anchor me-3 text-info"></i>Flota Fluvial
+                <i class="fa-solid fa-ship me-3 text-secondary"></i>Catálogo Embarcaciones
             </a>
             <a href="<?= BASE_URL ?>/rutas" class="list-group-item list-group-item-action bg-transparent text-white <?= str_contains($currentRoute, '/rutas') ? 'active' : '' ?>">
                 <i class="fa-solid fa-route me-3 text-danger"></i>Rutas Fluviales
