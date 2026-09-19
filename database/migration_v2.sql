@@ -3,8 +3,6 @@
 -- Pagos Digitales, Validación QR, Asientos, Tracking y Flota
 -- =======================================================
 
-USE `fluviapp`;
-
 -- 1. Tabla de transacciones de pagos digitales (Wompi, etc.)
 CREATE TABLE IF NOT EXISTS `pagos_transacciones` (
     `id` INT AUTO_INCREMENT PRIMARY KEY,

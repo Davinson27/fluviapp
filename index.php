@@ -8,6 +8,21 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/app/Helpers/SessionHelper.php';
 require_once __DIR__ . '/app/Helpers/AuthHelper.php';
 
+// Auto-migración transparente v2.0 si la tabla pagos_transacciones no existe aún
+try {
+    $dbCheck = Database::getConnection();
+    $stmtCheck = $dbCheck->query("SHOW TABLES LIKE 'pagos_transacciones'");
+    if (!$stmtCheck->fetch()) {
+        $rawMigrate = file_get_contents(__DIR__ . '/database/migration_v2.sql');
+        if (!empty($rawMigrate)) {
+            $cleanMigrate = preg_replace('/^\s*USE\s+`?[a-zA-Z0-9_-]+`?\s*;/mi', '', $rawMigrate);
+            $dbCheck->exec($cleanMigrate);
+        }
+    }
+} catch (Throwable $e) {
+    // Continuar ejecución normalmente si no hay conexión o ya está migrado
+}
+
 // Obtener ruta solicitada
 $requestUri = $_SERVER['REQUEST_URI'] ?? '/';
 $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
