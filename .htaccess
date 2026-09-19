@@ -1,11 +1,10 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /fluviapp/fluviapp/
 
     # No reescribir si el archivo o directorio existe físicamente
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
 
     # Enrutar todo lo demás a index.php
-    RewriteRule ^(.*)$ index.php [QSA,L]
+    RewriteRule ^ index.php [QSA,L]
 </IfModule>
