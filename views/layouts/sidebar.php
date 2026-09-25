@@ -132,7 +132,7 @@ if (!empty($currentUser['id'])) {
 <!-- Page Content Wrapper -->
 <div id="page-content-wrapper" class="w-100">
     <!-- Navbar superior -->
-    <nav class="navbar navbar-expand-lg navbar-app px-3 px-md-4 py-3" style="position: relative; z-index: 1050;">
+    <nav class="navbar navbar-expand-lg navbar-app px-3 px-md-4 py-3" style="position: sticky; top: 0; z-index: 1050; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
         <div class="d-flex align-items-center">
             <!-- Botón 3 barritas que activa el menú lateral desplegable -->
             <button class="btn btn-outline-primary me-2 me-md-3 d-flex align-items-center justify-content-center shadow-sm" id="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" title="Menú de Navegación" style="width: 42px; height: 42px; border-radius: 10px;">

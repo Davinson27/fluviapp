@@ -137,7 +137,8 @@ body {
 
 /* Navbar Superior Interna */
 .navbar-app {
-    position: relative !important;
+    position: sticky !important;
+    top: 0 !important;
     z-index: 1050 !important;
     background-color: var(--nav-bg) !important;
     border-bottom: 1px solid var(--nav-border) !important;
